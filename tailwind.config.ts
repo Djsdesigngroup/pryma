@@ -9,11 +9,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        bg: "var(--color-bg)",
+        surface: "var(--color-surface)",
+        border: "var(--color-border)",
+        primary: "var(--color-text-primary)",
+        secondary: "var(--color-text-secondary)",
+        muted: "var(--color-text-muted)",
+        accent: "var(--color-accent)",
+      },
+      fontFamily: {
+        inter: ["var(--font-inter)", "system-ui", "sans-serif"],
+      },
+      maxWidth: {
+        profile: "480px",
       },
     },
   },
   plugins: [],
 };
+
 export default config;

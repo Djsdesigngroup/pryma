@@ -1,0 +1,35 @@
+"use client";
+
+import { useState } from "react";
+
+interface ShareButtonProps {
+  url: string;
+}
+
+export function ShareButton({ url }: ShareButtonProps) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleShare() {
+    if (navigator.share) {
+      await navigator.share({ title: "Pryma", url });
+    } else {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <button
+        onClick={handleShare}
+        className="w-[280px] border border-primary/20 text-secondary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-200 ease-out hover:border-primary/40 hover:text-primary"
+      >
+        {copied ? "Link copied" : "Send Pryma"}
+      </button>
+      <p className="font-light text-[10px] text-muted/50 tracking-wide">
+        Share your context instantly
+      </p>
+    </div>
+  );
+}
