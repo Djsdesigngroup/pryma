@@ -9,12 +9,10 @@ export const DEFAULT_PROFILE: PrymaProfile = {
   name: "Dominic Santalucia",
   role: "Founder",
   organization: "Pryma",
-  bio: "Building infrastructure for a more transparent, human internet.\n\nFocused on identity, trust, and how we interact in modern environments.",
-  website: "https://stierworld.com",
+  bio: "Building infrastructure for a more transparent, human internet.\nFocused on identity, trust, and how we interact online.",
   location: "Pennsylvania, US",
   bioProfessional:
-    "Founder of Pryma. Previously built identity and trust infrastructure across consumer and enterprise environments.\n\nOpen to advisory conversations around protocol design, early-stage product, and founder challenges.",
-  websiteProfessional: "https://stierworld.com",
+    "Founder of Pryma.\nOpen to conversations around identity systems, product, and early-stage infrastructure.",
   locationProfessional: "Pennsylvania, US",
 };
 
