@@ -5,28 +5,50 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { PrymaLogo } from "@/components/PrymaLogo";
 
+const isDev = process.env.NODE_ENV === "development";
+
 function AuthForm() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  const hasError = searchParams.get("error");
+  const hasCallbackError = searchParams.get("error");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email || loading) return;
+
     setLoading(true);
+    setErrorMsg(null);
+
     const supabase = createClient();
     const siteUrl =
       process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin;
+    const redirectTo = `${siteUrl}/auth/callback`;
+
+    console.log("[auth] signInWithOtp →", { email, redirectTo });
+
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: {
-        emailRedirectTo: `${siteUrl}/auth/callback`,
-      },
+      options: { emailRedirectTo: redirectTo },
     });
+
+    console.log(
+      "[auth] signInWithOtp ←",
+      error ? { message: error.message, status: error.status } : "ok"
+    );
+
     setLoading(false);
-    if (!error) setSent(true);
+
+    if (error) {
+      const msg = isDev
+        ? `${error.message}${error.status ? ` (${error.status})` : ""}`
+        : "Something went wrong. Please try again.";
+      setErrorMsg(msg);
+    } else {
+      setSent(true);
+    }
   }
 
   if (sent) {
@@ -44,7 +66,10 @@ function AuthForm() {
             </p>
           </div>
           <button
-            onClick={() => setSent(false)}
+            onClick={() => {
+              setSent(false);
+              setErrorMsg(null);
+            }}
             className="font-light text-xs text-muted hover:text-secondary transition-colors duration-200 ease-out tracking-wide uppercase"
           >
             Use a different email
@@ -68,9 +93,9 @@ function AuthForm() {
           </p>
         </div>
 
-        {hasError && (
+        {(hasCallbackError || errorMsg) && (
           <p className="text-[11px] text-[#f87171]/70 font-light text-center -mt-4">
-            Something went wrong. Please try again.
+            {errorMsg ?? "Something went wrong. Please try again."}
           </p>
         )}
 
