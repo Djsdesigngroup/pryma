@@ -31,8 +31,15 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
+
+  // /auth/callback must never be intercepted — the session is established there.
+  // /auth itself is always public. Neither should ever redirect to /auth.
+  const isPublicAuthRoute =
+    pathname.startsWith("/auth/callback") || pathname === "/auth";
+
   const isProtected =
-    pathname.startsWith("/edit") || pathname.startsWith("/onboarding");
+    !isPublicAuthRoute &&
+    (pathname.startsWith("/edit") || pathname.startsWith("/onboarding"));
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();

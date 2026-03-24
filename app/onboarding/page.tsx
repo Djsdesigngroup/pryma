@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { normalizeUrl } from "@/lib/profile";
 import { PrymaLogo } from "@/components/PrymaLogo";
 import { HandleInput } from "@/components/HandleInput";
 
@@ -11,6 +12,8 @@ interface OnboardingForm {
   full_name: string;
   role_title: string;
   organization: string;
+  phone: string;
+  email: string;
   public_bio: string;
   public_website: string;
   public_location: string;
@@ -24,6 +27,8 @@ const EMPTY: OnboardingForm = {
   full_name: "",
   role_title: "",
   organization: "",
+  phone: "",
+  email: "",
   public_bio: "",
   public_website: "",
   public_location: "",
@@ -84,11 +89,13 @@ export default function OnboardingPage() {
       full_name: form.full_name,
       role_title: form.role_title || null,
       organization: form.organization || null,
+      phone: form.phone || null,
+      email: form.email || null,
       public_bio: form.public_bio || null,
-      public_website: form.public_website || null,
+      public_website: normalizeUrl(form.public_website) || null,
       public_location: form.public_location || null,
       professional_bio: form.professional_bio || null,
-      professional_website: form.professional_website || null,
+      professional_website: normalizeUrl(form.professional_website) || null,
       professional_location: form.professional_location || null,
     });
 
@@ -118,7 +125,7 @@ export default function OnboardingPage() {
               @{form.handle}
             </p>
             <h1 className="font-medium text-[26px] tracking-[-0.02em] text-primary">
-              This is your Pryma.
+              Your Pryma is ready.
             </h1>
             <p className="font-light text-sm text-secondary mt-1">
               {form.full_name}
@@ -162,9 +169,11 @@ export default function OnboardingPage() {
             />
             {(
               [
-                { key: "full_name", label: "Full name", required: true },
-                { key: "role_title", label: "Role / title" },
-                { key: "organization", label: "Organization" },
+                { key: "full_name", label: "Full name", required: true, type: "text" },
+                { key: "role_title", label: "Role / title", type: "text" },
+                { key: "organization", label: "Organization", type: "text" },
+                { key: "phone", label: "Phone", type: "tel" },
+                { key: "email", label: "Email", type: "email" },
               ] as const
             ).map((field) => (
               <div key={field.key} className="flex flex-col gap-1.5">
@@ -179,7 +188,7 @@ export default function OnboardingPage() {
                 </label>
                 <input
                   id={field.key}
-                  type="text"
+                  type={field.type}
                   value={form[field.key]}
                   onChange={(e) => set(field.key, e.target.value)}
                   placeholder={`${field.label}…`}

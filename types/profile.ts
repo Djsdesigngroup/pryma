@@ -13,6 +13,9 @@ export interface PrymaProfile {
   bioProfessional?: string;
   websiteProfessional?: string;
   locationProfessional?: string;
+  // Global contact fields (not context-specific)
+  phone?: string;
+  email?: string;
   // Avatar — accepts URL or data URL
   avatarUrl?: string;
 }
@@ -31,6 +34,9 @@ export interface DbProfile {
   professional_bio: string | null;
   professional_website: string | null;
   professional_location: string | null;
+  // Requires DB migration: ALTER TABLE profiles ADD COLUMN phone TEXT, ADD COLUMN email TEXT;
+  phone: string | null;
+  email: string | null;
   created_at: string;
   updated_at: string;
 }
