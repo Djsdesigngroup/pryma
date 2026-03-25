@@ -120,23 +120,39 @@ export default function EditPage() {
     // browsers and CDN from serving a stale cached version of the old photo.
     const path = `${userId}/avatar-${Date.now()}.${ext}`;
 
-    console.log("[edit] avatar upload →", { path, size: file.size, type: file.type });
+    console.log("[edit] avatar upload →", { intendedPath: path, size: file.size, type: file.type });
 
-    const { error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from("avatars")
       .upload(path, file, { upsert: false, contentType: file.type });
 
     if (uploadError) {
-      console.error("[edit] avatar upload failed:", uploadError.message);
+      // Log full error shape — statusCode is the string code from Supabase Storage,
+      // status is the numeric HTTP status. Both are useful for diagnosing bucket
+      // policy vs. path vs. auth issues.
+      console.error("[edit] avatar upload failed:", {
+        message: uploadError.message,
+        status: (uploadError as { status?: number }).status,
+        statusCode: (uploadError as { statusCode?: string }).statusCode,
+      });
       setError(`Photo upload failed: ${uploadError.message}`);
       setAvatarLoading(false);
       return;
     }
 
-    // getPublicUrl is synchronous — it constructs the URL without a network
-    // request. The URL is only accessible if the "avatars" bucket has Public
-    // access enabled in Supabase Storage settings.
-    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    // Use the path echoed back by the Storage API — not our local variable.
+    // The API runs _removeEmptyFolders() on the path before storing; using
+    // uploadData.path ensures getPublicUrl and the DB value always match what
+    // was actually written to the bucket.
+    const confirmedPath = uploadData.path;
+    console.log("[edit] avatar upload ✓", {
+      confirmedPath,
+      fullPath: uploadData.fullPath, // includes bucket name: "avatars/<confirmedPath>"
+    });
+
+    // getPublicUrl is synchronous — constructs the URL without a network call.
+    // Requires the "avatars" bucket to be set to Public in Supabase Storage.
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(confirmedPath);
     const newUrl = urlData.publicUrl;
     console.log("[edit] avatar public URL:", newUrl);
 
