@@ -230,7 +230,7 @@ export default function EditPage() {
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/");
+    router.push("/auth");
   }
 
   // Bio preview tracks whichever context is active
@@ -349,17 +349,14 @@ export default function EditPage() {
             <SegmentedControl value={activeContext} onChange={setActiveContext} />
           </div>
 
-          {/* Active context fields only — the inactive context's values are
-              preserved in form state and restored when you switch back. */}
-          {activeContext === "public" ? (
-            <div className="flex flex-col gap-5">
-              <ContextFields ctx="public" form={form} set={set} />
-            </div>
-          ) : (
-            <div className="flex flex-col gap-5">
-              <ContextFields ctx="professional" form={form} set={set} />
-            </div>
-          )}
+          {/* Active context fields only.
+              key={activeContext} forces a clean unmount/remount on every switch
+              so React never reuses a stale field instance between contexts.
+              The inactive context's values are preserved in form state and
+              restored the moment you switch back. */}
+          <div className="flex flex-col gap-5">
+            <ContextFields key={activeContext} ctx={activeContext} form={form} set={set} />
+          </div>
 
           {/* Live preview — inline end-cap of the context section.
               Reflects the first paragraph of the active bio as it's typed. */}
