@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { normalizeUrl } from "@/lib/profile";
 import { PrymaLogo } from "@/components/PrymaLogo";
 import { HandleInput } from "@/components/HandleInput";
+import { SegmentedControl } from "@/components/SegmentedControl";
+import type { ContextMode } from "@/types/profile";
 
 interface OnboardingForm {
   handle: string;
@@ -42,6 +44,7 @@ export default function OnboardingPage() {
   const [form, setForm] = useState<OnboardingForm>(EMPTY);
   const [userId, setUserId] = useState<string | null>(null);
   const [handleValid, setHandleValid] = useState(false);
+  const [activeContext, setActiveContext] = useState<ContextMode>("public");
   const [saving, setSaving] = useState(false);
   const [complete, setComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -200,110 +203,36 @@ export default function OnboardingPage() {
 
           <div className="border-t border-border opacity-20" />
 
-          {/* Public context */}
-          <div className="flex flex-col gap-5">
-            <p className="font-light text-[10px] text-muted tracking-widest uppercase">
-              Public context
-            </p>
-            <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="public_bio"
-                className="font-light text-xs text-muted tracking-wide uppercase"
-              >
-                Bio
-              </label>
-              <textarea
-                id="public_bio"
-                value={form.public_bio}
-                onChange={(e) => set("public_bio", e.target.value)}
-                rows={4}
-                placeholder="Bio…"
-                className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out resize-none leading-relaxed"
+          {/* Context editor — one context visible at a time */}
+          <div className="flex flex-col gap-6">
+
+            {/* Toggle */}
+            <div className="flex justify-center">
+              <SegmentedControl value={activeContext} onChange={setActiveContext} />
+            </div>
+
+            {/* Active context fields only.
+                key={activeContext} forces a clean remount on every switch so
+                React never reuses a stale textarea instance between contexts.
+                Both contexts' values stay alive in form state and are restored
+                the moment you switch back. */}
+            <div className="flex flex-col gap-5">
+              <OnboardingContextFields
+                key={activeContext}
+                ctx={activeContext}
+                form={form}
+                set={set}
               />
             </div>
-            {(
-              [
-                { key: "public_website", label: "Website", type: "url" },
-                { key: "public_location", label: "Location", type: "text" },
-              ] as const
-            ).map(({ key, label, type }) => (
-              <div key={key} className="flex flex-col gap-1.5">
-                <label
-                  htmlFor={key}
-                  className="font-light text-xs text-muted tracking-wide uppercase"
-                >
-                  {label}
-                </label>
-                <input
-                  id={key}
-                  type={type}
-                  value={form[key]}
-                  onChange={(e) => set(key, e.target.value)}
-                  placeholder={`${label}…`}
-                  className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
-                />
-              </div>
-            ))}
-          </div>
 
-          <div className="border-t border-border opacity-20" />
-
-          {/* Professional context */}
-          <div className="flex flex-col gap-5">
-            <p className="font-light text-[10px] text-muted tracking-widest uppercase">
-              Professional context
+            <p className="text-center font-light text-[10px] text-muted/50 tracking-wide">
+              You can refine both contexts anytime after setup.
             </p>
-            <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="professional_bio"
-                className="font-light text-xs text-muted tracking-wide uppercase"
-              >
-                Bio
-              </label>
-              <textarea
-                id="professional_bio"
-                value={form.professional_bio}
-                onChange={(e) => set("professional_bio", e.target.value)}
-                rows={4}
-                placeholder="Bio…"
-                className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out resize-none leading-relaxed"
-              />
-            </div>
-            {(
-              [
-                {
-                  key: "professional_website",
-                  label: "Website",
-                  type: "url",
-                },
-                {
-                  key: "professional_location",
-                  label: "Location",
-                  type: "text",
-                },
-              ] as const
-            ).map(({ key, label, type }) => (
-              <div key={key} className="flex flex-col gap-1.5">
-                <label
-                  htmlFor={key}
-                  className="font-light text-xs text-muted tracking-wide uppercase"
-                >
-                  {label}
-                </label>
-                <input
-                  id={key}
-                  type={type}
-                  value={form[key]}
-                  onChange={(e) => set(key, e.target.value)}
-                  placeholder={`${label}…`}
-                  className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
-                />
-              </div>
-            ))}
+
           </div>
 
           {error && (
-            <p className="text-[11px] text-[#f87171]/70 font-light text-center">
+            <p className="text-[11px] text-[#f87171]/70 font-light text-center -mt-4">
               {error}
             </p>
           )}
@@ -320,5 +249,60 @@ export default function OnboardingPage() {
         </form>
       </div>
     </main>
+  );
+}
+
+// ── OnboardingContextFields ───────────────────────────────────────────────────
+// Renders bio + website + location for the active context only.
+// Mounted fresh on every tab switch (via key={activeContext}) so React never
+// reuses a stale input instance. Both contexts' values live in parent form
+// state and are restored instantly when switching back.
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface OnboardingContextFieldsProps {
+  ctx: ContextMode;
+  form: OnboardingForm;
+  set: (key: keyof OnboardingForm, value: string) => void;
+}
+
+function OnboardingContextFields({ ctx, form, set }: OnboardingContextFieldsProps) {
+  const bioKey   = `${ctx}_bio`      as keyof OnboardingForm;
+  const webKey   = `${ctx}_website`  as keyof OnboardingForm;
+  const locKey   = `${ctx}_location` as keyof OnboardingForm;
+
+  return (
+    <>
+      <div className="flex flex-col gap-1.5">
+        <label className="font-light text-xs text-muted tracking-wide uppercase">
+          Bio
+        </label>
+        <textarea
+          value={form[bioKey]}
+          onChange={(e) => set(bioKey, e.target.value)}
+          rows={4}
+          placeholder="Bio…"
+          className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out resize-none leading-relaxed"
+        />
+      </div>
+      {(
+        [
+          { key: webKey, label: "Website",  type: "url"  },
+          { key: locKey, label: "Location", type: "text" },
+        ] as const
+      ).map(({ key, label, type }) => (
+        <div key={key} className="flex flex-col gap-1.5">
+          <label className="font-light text-xs text-muted tracking-wide uppercase">
+            {label}
+          </label>
+          <input
+            type={type}
+            value={form[key]}
+            onChange={(e) => set(key, e.target.value)}
+            placeholder={`${label}…`}
+            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
+          />
+        </div>
+      ))}
+    </>
   );
 }
