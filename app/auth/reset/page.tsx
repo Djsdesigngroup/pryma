@@ -17,7 +17,9 @@ export default function ResetPasswordPage() {
     setErrorMsg(null);
 
     const supabase = createClient();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin;
+    // Use || (not ??) so an empty-string env var falls back to window.location.origin.
+    // Strip trailing slash to prevent double-slash in the redirectTo URL.
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, "");
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${siteUrl}/auth/callback`,
