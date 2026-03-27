@@ -45,6 +45,12 @@ export async function GET(request: NextRequest) {
   }
 
   if (!sessionError) {
+    // Password recovery — session is established; send user to set their password.
+    if (type === "recovery") {
+      console.log("[callback] recovery token verified → /auth/update-password");
+      return NextResponse.redirect(`${origin}/auth/update-password`);
+    }
+
     const {
       data: { user },
     } = await supabase.auth.getUser();

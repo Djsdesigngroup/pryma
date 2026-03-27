@@ -347,8 +347,11 @@ export default function EditPage() {
         <div className="flex flex-col gap-6">
 
           {/* 1 — Toggle: Public | Professional */}
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center gap-2">
             <SegmentedControl value={activeContext} onChange={setActiveContext} />
+            <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
+              You are editing your {activeContext} profile
+            </p>
           </div>
 
           {/* 2 — Active context fields (bio, website, location) — one context only */}
