@@ -337,29 +337,30 @@ export default function EditPage() {
 
         <div className="border-t border-border opacity-20" />
 
-        {/* ── Context section ────────────────────────────────────────────────
-            Toggle at the top controls which fields are visible.
-            Switching tabs preserves unsaved edits for both contexts in memory.
-            Preview box at the bottom reflects the active context live.
-        ─────────────────────────────────────────────────────────────────── */}
+        {/* ── Context section ──────────────────────────────────────────────
+            Order: toggle → active fields → preview.
+            Only ONE context's fields are in the DOM at any time.
+            key={activeContext} forces a full remount on switch, preventing
+            React from reusing stale inputs. Values for both contexts live
+            in parent form state and survive tab switches untouched.
+        ────────────────────────────────────────────────────────────────── */}
         <div className="flex flex-col gap-6">
 
-          {/* Toggle — self-explanatory, no separate label needed */}
+          {/* 1 — Toggle: Public | Professional */}
           <div className="flex justify-center">
             <SegmentedControl value={activeContext} onChange={setActiveContext} />
           </div>
 
-          {/* Active context fields only.
-              key={activeContext} forces a clean unmount/remount on every switch
-              so React never reuses a stale field instance between contexts.
-              The inactive context's values are preserved in form state and
-              restored the moment you switch back. */}
+          {/* 2 — Active context fields (bio, website, location) — one context only */}
           <div className="flex flex-col gap-5">
-            <ContextFields key={activeContext} ctx={activeContext} form={form} set={set} />
+            {activeContext === "public" ? (
+              <ContextFields key="public" ctx="public" form={form} set={set} />
+            ) : (
+              <ContextFields key="professional" ctx="professional" form={form} set={set} />
+            )}
           </div>
 
-          {/* Live preview — inline end-cap of the context section.
-              Reflects the first paragraph of the active bio as it's typed. */}
+          {/* 3 — Live bio preview */}
           <div className="w-full rounded-xl border border-border/30 bg-surface/30 px-4 py-3 min-h-[56px]">
             {activeBioPreview ? (
               <p className="text-sm font-light text-muted/70 leading-[1.55]">
@@ -414,8 +415,9 @@ export default function EditPage() {
 }
 
 // ── ContextFields ─────────────────────────────────────────────────────────────
-// Extracted so the two conditional branches above stay readable.
-// Renders bio textarea + website + location for a single context.
+// Renders bio textarea + website + location for one context.
+// Always mounted with an explicit string key ("public" or "professional") so
+// React fully remounts the component — and its DOM inputs — on every switch.
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface ContextFieldsProps {
@@ -425,6 +427,10 @@ interface ContextFieldsProps {
 }
 
 function ContextFields({ ctx, form, set }: ContextFieldsProps) {
+  const bioKey = `${ctx}_bio`      as keyof EditForm;
+  const webKey = `${ctx}_website`  as keyof EditForm;
+  const locKey = `${ctx}_location` as keyof EditForm;
+
   return (
     <>
       <div className="flex flex-col gap-1.5">
@@ -432,35 +438,37 @@ function ContextFields({ ctx, form, set }: ContextFieldsProps) {
           Bio
         </label>
         <textarea
-          value={form[`${ctx}_bio` as keyof EditForm]}
-          onChange={(e) => set(`${ctx}_bio` as keyof EditForm, e.target.value)}
+          value={form[bioKey]}
+          onChange={(e) => set(bioKey, e.target.value)}
           rows={4}
           placeholder="Bio…"
           className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out resize-none leading-relaxed"
         />
       </div>
-      {(
-        [
-          { suffix: "website",  label: "Website",  type: "url"  },
-          { suffix: "location", label: "Location", type: "text" },
-        ] as const
-      ).map(({ suffix, label, type }) => {
-        const key = `${ctx}_${suffix}` as keyof EditForm;
-        return (
-          <div key={key} className="flex flex-col gap-1.5">
-            <label className="font-light text-xs text-muted tracking-wide uppercase">
-              {label}
-            </label>
-            <input
-              type={type}
-              value={form[key]}
-              onChange={(e) => set(key, e.target.value)}
-              placeholder={`${label}…`}
-              className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
-            />
-          </div>
-        );
-      })}
+      <div className="flex flex-col gap-1.5">
+        <label className="font-light text-xs text-muted tracking-wide uppercase">
+          Website
+        </label>
+        <input
+          type="url"
+          value={form[webKey]}
+          onChange={(e) => set(webKey, e.target.value)}
+          placeholder="Website…"
+          className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label className="font-light text-xs text-muted tracking-wide uppercase">
+          Location
+        </label>
+        <input
+          type="text"
+          value={form[locKey]}
+          onChange={(e) => set(locKey, e.target.value)}
+          placeholder="Location…"
+          className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
+        />
+      </div>
     </>
   );
 }

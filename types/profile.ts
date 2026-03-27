@@ -34,7 +34,6 @@ export interface DbProfile {
   professional_bio: string | null;
   professional_website: string | null;
   professional_location: string | null;
-  // Requires DB migration: ALTER TABLE profiles ADD COLUMN phone TEXT, ADD COLUMN email TEXT;
   phone: string | null;
   email: string | null;
   created_at: string;
