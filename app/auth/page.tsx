@@ -89,7 +89,7 @@ function AuthForm() {
             Sign in to Pryma
           </h1>
           <p className="font-light text-sm text-secondary">
-            We&apos;ll send you a link — no password needed.
+            Use your email to sign in or create your profile.
           </p>
         </div>
 
@@ -117,9 +117,13 @@ function AuthForm() {
             disabled={loading || !email}
             className="w-[280px] border border-primary/20 text-primary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-200 ease-out hover:border-primary/50 hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            {loading ? "Sending…" : "Send link"}
+            {loading ? "Sending…" : "Send sign-in link"}
           </button>
         </form>
+
+        <p className="font-light text-xs text-muted/60 text-center -mt-6">
+          If you&apos;re new, you&apos;ll set up your profile next.
+        </p>
 
         <a
           href="/u/dom"
