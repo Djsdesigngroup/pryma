@@ -80,7 +80,7 @@ export function ProfileCard({ profile, profileUrl, isOwner = false }: ProfileCar
           <button
             onClick={() => setMenuOpen((o) => !o)}
             aria-label="Profile actions"
-            className="p-2 text-muted/40 hover:text-secondary transition-colors duration-200 ease-out leading-none tracking-[0.15em] select-none"
+            className="p-2 text-muted/60 hover:text-secondary transition-colors duration-200 ease-out leading-none tracking-[0.15em] select-none"
           >
             ···
           </button>
