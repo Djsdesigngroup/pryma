@@ -60,6 +60,7 @@ export default function EditPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
       if (!user) {
         router.replace("/auth");
         return;
@@ -99,6 +100,7 @@ export default function EditPage() {
         professional_location: profile.professional_location ?? "",
       });
     }
+
     load();
   }, [router]);
 
@@ -111,25 +113,25 @@ export default function EditPage() {
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
+
     setAvatarLoading(true);
     setError(null);
 
     const supabase = createClient();
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-    // Timestamp in path ensures each upload is a unique object — prevents
-    // browsers and CDN from serving a stale cached version of the old photo.
     const path = `${userId}/avatar-${Date.now()}.${ext}`;
 
-    console.log("[edit] avatar upload →", { intendedPath: path, size: file.size, type: file.type });
+    console.log("[edit] avatar upload →", {
+      intendedPath: path,
+      size: file.size,
+      type: file.type,
+    });
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("avatars")
       .upload(path, file, { upsert: false, contentType: file.type });
 
     if (uploadError) {
-      // Log full error shape — statusCode is the string code from Supabase Storage,
-      // status is the numeric HTTP status. Both are useful for diagnosing bucket
-      // policy vs. path vs. auth issues.
       console.error("[edit] avatar upload failed:", {
         message: uploadError.message,
         status: (uploadError as { status?: number }).status,
@@ -140,28 +142,22 @@ export default function EditPage() {
       return;
     }
 
-    // Use the path echoed back by the Storage API — not our local variable.
-    // The API runs _removeEmptyFolders() on the path before storing; using
-    // uploadData.path ensures getPublicUrl and the DB value always match what
-    // was actually written to the bucket.
     const confirmedPath = uploadData.path;
     console.log("[edit] avatar upload ✓", {
       confirmedPath,
-      fullPath: uploadData.fullPath, // includes bucket name: "avatars/<confirmedPath>"
+      fullPath: uploadData.fullPath,
     });
 
-    // getPublicUrl is synchronous — constructs the URL without a network call.
-    // Requires the "avatars" bucket to be set to Public in Supabase Storage.
-    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(confirmedPath);
+    const { data: urlData } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(confirmedPath);
+
     const newUrl = urlData.publicUrl;
     console.log("[edit] avatar public URL:", newUrl);
 
-    // Update React state immediately so the avatar preview reflects the new photo.
     setForm((prev) => ({ ...prev, avatar_url: newUrl }));
     setSaved(false);
 
-    // Persist avatar_url to the DB right away — don't require the user to
-    // manually click Save. A photo upload should be an atomic, immediate action.
     const { error: dbError } = await supabase
       .from("profiles")
       .update({ avatar_url: newUrl, updated_at: new Date().toISOString() })
@@ -169,8 +165,6 @@ export default function EditPage() {
 
     if (dbError) {
       console.error("[edit] avatar_url DB save failed:", dbError.message);
-      // Non-fatal — photo is in storage, but the row doesn't reference it yet.
-      // Surface a warning but don't block the user.
       setError(`Photo uploaded but not saved: ${dbError.message}`);
     } else {
       console.log("[edit] avatar_url saved to DB ✓");
@@ -181,10 +175,10 @@ export default function EditPage() {
 
   async function handleSave() {
     if (!userId || !handleValid) return;
+
     setSaving(true);
     setError(null);
 
-    // Normalize website URLs before persisting — bare domains get https://
     const normalizedPublicWebsite = normalizeUrl(form.public_website);
     const normalizedProfWebsite = normalizeUrl(form.professional_website);
 
@@ -210,12 +204,11 @@ export default function EditPage() {
       .eq("user_id", userId);
 
     setSaving(false);
+
     if (saveError) {
       console.error("[edit] save error:", saveError.message);
       setError(saveError.message);
     } else {
-      // Reflect normalized URLs back into form state so inputs show canonical
-      // values (e.g. "pryma.id" → "https://pryma.id")
       setForm((prev) => ({
         ...prev,
         public_website: normalizedPublicWebsite,
@@ -233,9 +226,18 @@ export default function EditPage() {
     router.push("/auth");
   }
 
-  // Bio preview tracks whichever context is active
-  const activeBioPreview =
+  const activeBio =
     activeContext === "professional" ? form.professional_bio : form.public_bio;
+
+  const activeWebsite =
+    activeContext === "professional"
+      ? form.professional_website
+      : form.public_website;
+
+  const activeLocation =
+    activeContext === "professional"
+      ? form.professional_location
+      : form.public_location;
 
   if (!userId) {
     return (
@@ -248,8 +250,6 @@ export default function EditPage() {
   return (
     <main className="min-h-screen flex flex-col items-center py-12 px-6">
       <div className="w-full max-w-profile flex flex-col gap-8">
-
-        {/* Header */}
         <div className="flex flex-col items-center gap-4">
           <PrymaLogo size={24} />
           <p className="font-light text-sm text-muted tracking-wide uppercase">
@@ -257,96 +257,16 @@ export default function EditPage() {
           </p>
         </div>
 
-        {/* Avatar */}
-        <div className="flex flex-col items-center gap-3">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={avatarLoading}
-            className="w-20 h-20 rounded-full overflow-hidden border border-border/30 flex items-center justify-center transition-all duration-200 ease-out hover:border-primary/30 group"
-            aria-label="Change profile photo"
-          >
-            {form.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={form.avatar_url}
-                alt="Avatar"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="text-muted text-2xl font-light group-hover:text-secondary transition-colors duration-200 select-none">
-                {form.full_name?.charAt(0)?.toUpperCase() || "+"}
-              </span>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={avatarLoading}
-            className="font-light text-xs text-muted hover:text-secondary transition-colors duration-200 ease-out tracking-wide uppercase disabled:opacity-50"
-          >
-            {avatarLoading ? "Uploading…" : form.avatar_url ? "Change photo" : "Add photo"}
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarChange}
-          />
-        </div>
+        <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-5">
+            <HandleInput
+              value={form.handle}
+              onChange={(v) => set("handle", v)}
+              currentHandle={originalHandle}
+              onValidChange={setHandleValid}
+            />
+          </div>
 
-        <div className="border-t border-border opacity-20" />
-
-        {/* Identity — handle, name, role, org, phone, email */}
-        <div className="flex flex-col gap-5">
-          <HandleInput
-            value={form.handle}
-            onChange={(v) => set("handle", v)}
-            currentHandle={originalHandle}
-            onValidChange={setHandleValid}
-          />
-          {(
-            [
-              { key: "full_name",    label: "Full name",     required: true, type: "text"  },
-              { key: "role_title",   label: "Role / title",                  type: "text"  },
-              { key: "organization", label: "Organization",                  type: "text"  },
-              { key: "phone",        label: "Phone",                         type: "tel"   },
-              { key: "email",        label: "Email",                         type: "email" },
-            ] as const
-          ).map((field) => (
-            <div key={field.key} className="flex flex-col gap-1.5">
-              <label
-                htmlFor={field.key}
-                className="font-light text-xs text-muted tracking-wide uppercase"
-              >
-                {field.label}
-                {"required" in field && field.required && <span className="ml-1">*</span>}
-              </label>
-              <input
-                id={field.key}
-                type={field.type}
-                value={form[field.key]}
-                onChange={(e) => set(field.key, e.target.value)}
-                placeholder={`${field.label}…`}
-                className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
-              />
-            </div>
-          ))}
-        </div>
-
-        <div className="border-t border-border opacity-20" />
-
-        {/* ── Context section ──────────────────────────────────────────────
-            Order: toggle → active fields → preview.
-            Only ONE context's fields are in the DOM at any time.
-            key={activeContext} forces a full remount on switch, preventing
-            React from reusing stale inputs. Values for both contexts live
-            in parent form state and survive tab switches untouched.
-        ────────────────────────────────────────────────────────────────── */}
-        <div className="flex flex-col gap-6">
-
-          {/* 1 — Toggle: Public | Professional */}
           <div className="flex flex-col items-center gap-2">
             <SegmentedControl value={activeContext} onChange={setActiveContext} />
             <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
@@ -354,7 +274,112 @@ export default function EditPage() {
             </p>
           </div>
 
-          {/* 2 — Active context fields (bio, website, location) — one context only */}
+          <div className="w-full rounded-[28px] border border-border/30 bg-surface/40 px-5 py-6 flex flex-col items-center text-center gap-4">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={avatarLoading}
+              className="w-20 h-20 rounded-full overflow-hidden border border-border/30 flex items-center justify-center transition-all duration-200 ease-out hover:border-primary/30 group"
+              aria-label="Change profile photo"
+            >
+              {form.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={form.avatar_url}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-muted text-2xl font-light group-hover:text-secondary transition-colors duration-200 select-none">
+                  {form.full_name?.charAt(0)?.toUpperCase() || "+"}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={avatarLoading}
+              className="font-light text-[11px] text-muted hover:text-secondary transition-colors duration-200 ease-out tracking-wide uppercase disabled:opacity-50"
+            >
+              {avatarLoading ? "Uploading…" : form.avatar_url ? "Change photo" : "Add photo"}
+            </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-lg font-medium tracking-[-0.02em] text-primary">
+                {form.full_name || "Your name"}
+              </p>
+
+              {(form.role_title || form.organization) && (
+                <p className="text-sm font-light text-secondary">
+                  {[form.role_title, form.organization].filter(Boolean).join(" · ")}
+                </p>
+              )}
+            </div>
+
+            <div className="w-full max-w-[320px] flex flex-col items-center gap-2">
+              {activeBio ? (
+                <p className="text-sm font-light text-muted/80 leading-[1.6] whitespace-pre-wrap">
+                  {activeBio}
+                </p>
+              ) : (
+                <p className="text-sm font-light text-muted/30 italic">
+                  Your {activeContext} bio preview will appear here.
+                </p>
+              )}
+
+              {activeWebsite && (
+                <p className="text-xs font-light text-secondary break-all">
+                  {activeWebsite}
+                </p>
+              )}
+
+              {activeLocation && (
+                <p className="text-xs font-light text-muted/70">
+                  {activeLocation}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-5">
+            {(
+              [
+                { key: "full_name", label: "Full name", required: true, type: "text" },
+                { key: "role_title", label: "Role / title", type: "text" },
+                { key: "organization", label: "Organization", type: "text" },
+                { key: "phone", label: "Phone", type: "tel" },
+                { key: "email", label: "Email", type: "email" },
+              ] as const
+            ).map((field) => (
+              <div key={field.key} className="flex flex-col gap-1.5">
+                <label
+                  htmlFor={field.key}
+                  className="font-light text-xs text-muted tracking-wide uppercase"
+                >
+                  {field.label}
+                  {"required" in field && field.required && <span className="ml-1">*</span>}
+                </label>
+                <input
+                  id={field.key}
+                  type={field.type}
+                  value={form[field.key]}
+                  onChange={(e) => set(field.key, e.target.value)}
+                  placeholder={`${field.label}…`}
+                  className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
+                />
+              </div>
+            ))}
+          </div>
+
           <div className="flex flex-col gap-5">
             {activeContext === "public" ? (
               <ContextFields key="public" ctx="public" form={form} set={set} />
@@ -362,20 +387,6 @@ export default function EditPage() {
               <ContextFields key="professional" ctx="professional" form={form} set={set} />
             )}
           </div>
-
-          {/* 3 — Live bio preview */}
-          <div className="w-full rounded-xl border border-border/30 bg-surface/30 px-4 py-3 min-h-[56px]">
-            {activeBioPreview ? (
-              <p className="text-sm font-light text-muted/70 leading-[1.55]">
-                {activeBioPreview.split("\n\n")[0]}
-              </p>
-            ) : (
-              <p className="text-sm font-light text-muted/30 italic">
-                Bio preview…
-              </p>
-            )}
-          </div>
-
         </div>
 
         <div className="border-t border-border opacity-20" />
@@ -386,7 +397,6 @@ export default function EditPage() {
           </p>
         )}
 
-        {/* Actions */}
         <div className="flex flex-col items-center gap-3 pt-2">
           <button
             type="button"
@@ -394,8 +404,9 @@ export default function EditPage() {
             disabled={saving || !handleValid}
             className="w-[280px] border border-primary/20 text-primary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-200 ease-out hover:border-primary/50 hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            {saving ? "Saving…" : saved ? "Saved ✓" : "Save profile"}
+            {saving ? "Saving…" : saved ? "Saved ✓" : "Save changes"}
           </button>
+
           <button
             type="button"
             onClick={() => window.open(`/u/${form.handle}`, "_blank")}
@@ -403,6 +414,7 @@ export default function EditPage() {
           >
             View profile →
           </button>
+
           <button
             type="button"
             onClick={handleSignOut}
@@ -411,17 +423,10 @@ export default function EditPage() {
             Sign out
           </button>
         </div>
-
       </div>
     </main>
   );
 }
-
-// ── ContextFields ─────────────────────────────────────────────────────────────
-// Renders bio textarea + website + location for one context.
-// Always mounted with an explicit string key ("public" or "professional") so
-// React fully remounts the component — and its DOM inputs — on every switch.
-// ─────────────────────────────────────────────────────────────────────────────
 
 interface ContextFieldsProps {
   ctx: "public" | "professional";
@@ -430,8 +435,8 @@ interface ContextFieldsProps {
 }
 
 function ContextFields({ ctx, form, set }: ContextFieldsProps) {
-  const bioKey = `${ctx}_bio`      as keyof EditForm;
-  const webKey = `${ctx}_website`  as keyof EditForm;
+  const bioKey = `${ctx}_bio` as keyof EditForm;
+  const webKey = `${ctx}_website` as keyof EditForm;
   const locKey = `${ctx}_location` as keyof EditForm;
 
   return (
@@ -448,6 +453,7 @@ function ContextFields({ ctx, form, set }: ContextFieldsProps) {
           className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out resize-none leading-relaxed"
         />
       </div>
+
       <div className="flex flex-col gap-1.5">
         <label className="font-light text-xs text-muted tracking-wide uppercase">
           Website
@@ -460,6 +466,7 @@ function ContextFields({ ctx, form, set }: ContextFieldsProps) {
           className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
         />
       </div>
+
       <div className="flex flex-col gap-1.5">
         <label className="font-light text-xs text-muted tracking-wide uppercase">
           Location
