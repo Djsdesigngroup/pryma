@@ -274,6 +274,93 @@ export default function EditPage() {
             </p>
           </div>
 
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
+                Profile details
+              </p>
+            </div>
+
+            {(
+              [
+                { key: "full_name", label: "Full name", required: true, type: "text" },
+                { key: "role_title", label: "Role / title", type: "text" },
+                { key: "organization", label: "Organization", type: "text" },
+              ] as const
+            ).map((field) => (
+              <div key={field.key} className="flex flex-col gap-1.5">
+                <label
+                  htmlFor={field.key}
+                  className="font-light text-xs text-muted tracking-wide uppercase"
+                >
+                  {field.label}
+                  {"required" in field && field.required && <span className="ml-1">*</span>}
+                </label>
+                <input
+                  id={field.key}
+                  type={field.type}
+                  value={form[field.key]}
+                  onChange={(e) => set(field.key, e.target.value)}
+                  placeholder={`${field.label}…`}
+                  className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
+                Contact
+              </p>
+            </div>
+
+            {(
+              [
+                { key: "phone", label: "Phone", type: "tel" },
+                { key: "email", label: "Email", type: "email" },
+              ] as const
+            ).map((field) => (
+              <div key={field.key} className="flex flex-col gap-1.5">
+                <label
+                  htmlFor={field.key}
+                  className="font-light text-xs text-muted tracking-wide uppercase"
+                >
+                  {field.label}
+                </label>
+                <input
+                  id={field.key}
+                  type={field.type}
+                  value={form[field.key]}
+                  onChange={(e) => set(field.key, e.target.value)}
+                  placeholder={`${field.label}…`}
+                  className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
+                {activeContext} view
+              </p>
+            </div>
+
+            {activeContext === "public" ? (
+              <ContextFields key="public" ctx="public" form={form} set={set} />
+            ) : (
+              <ContextFields
+                key="professional"
+                ctx="professional"
+                form={form}
+                set={set}
+              />
+            )}
+          </div>
+
+          <div className="border-t border-border opacity-20" />
+
           <div className="flex flex-col gap-2">
             <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase text-center">
               Preview
@@ -354,91 +441,6 @@ export default function EditPage() {
                 )}
               </div>
             </div>
-          </div>
-
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
-                Profile details
-              </p>
-            </div>
-
-            {(
-              [
-                { key: "full_name", label: "Full name", required: true, type: "text" },
-                { key: "role_title", label: "Role / title", type: "text" },
-                { key: "organization", label: "Organization", type: "text" },
-              ] as const
-            ).map((field) => (
-              <div key={field.key} className="flex flex-col gap-1.5">
-                <label
-                  htmlFor={field.key}
-                  className="font-light text-xs text-muted tracking-wide uppercase"
-                >
-                  {field.label}
-                  {"required" in field && field.required && <span className="ml-1">*</span>}
-                </label>
-                <input
-                  id={field.key}
-                  type={field.type}
-                  value={form[field.key]}
-                  onChange={(e) => set(field.key, e.target.value)}
-                  placeholder={`${field.label}…`}
-                  className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
-                />
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
-                Contact
-              </p>
-            </div>
-
-            {(
-              [
-                { key: "phone", label: "Phone", type: "tel" },
-                { key: "email", label: "Email", type: "email" },
-              ] as const
-            ).map((field) => (
-              <div key={field.key} className="flex flex-col gap-1.5">
-                <label
-                  htmlFor={field.key}
-                  className="font-light text-xs text-muted tracking-wide uppercase"
-                >
-                  {field.label}
-                </label>
-                <input
-                  id={field.key}
-                  type={field.type}
-                  value={form[field.key]}
-                  onChange={(e) => set(field.key, e.target.value)}
-                  placeholder={`${field.label}…`}
-                  className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
-                />
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
-                {activeContext} profile
-              </p>
-            </div>
-
-            {activeContext === "public" ? (
-              <ContextFields key="public" ctx="public" form={form} set={set} />
-            ) : (
-              <ContextFields
-                key="professional"
-                ctx="professional"
-                form={form}
-                set={set}
-              />
-            )}
           </div>
         </div>
 
