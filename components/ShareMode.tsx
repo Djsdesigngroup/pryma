@@ -44,7 +44,7 @@ export function ShareMode({ url, mode, handle, ctx, onClose }: ShareModeProps) {
   const contextLabel = mode === "professional" ? "Professional" : "Public";
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center gap-5 px-6">
+    <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center gap-5 px-6">
 
       {/* Close */}
       <button
@@ -80,7 +80,7 @@ export function ShareMode({ url, mode, handle, ctx, onClose }: ShareModeProps) {
       {/* QR code — primary share mechanism */}
       <div className="flex flex-col items-center gap-3">
         <div className="bg-[#111111] rounded-2xl p-6">
-          <ProfileQR url={url} size={220} />
+          <ProfileQR url={url} size={240} />
         </div>
         <p className="font-light text-xs text-muted tracking-wide uppercase">
           Scan to view

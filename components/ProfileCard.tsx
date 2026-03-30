@@ -213,26 +213,29 @@ export function ProfileCard({
         website={normalizedWebsite}
       />
 
-      {/* Divider */}
-      <div className="w-full border-t border-border opacity-20" />
+      {/* Divider + Actions + QR — hidden while Share Mode is open to prevent duplicate QR */}
+      {!shareModeOpen && (
+        <>
+          <div className="w-full border-t border-border opacity-20" />
 
-      {/* Actions + QR */}
-      <div className="flex flex-col items-center gap-4">
-        <div className="flex flex-col items-center gap-3">
-          <div className="bg-[#111111] rounded-xl p-4">
-            <ProfileQR url={shareUrl} />
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-3">
+              <div className="bg-[#111111] rounded-xl p-4">
+                <ProfileQR url={shareUrl} />
+              </div>
+              <p className="font-light text-xs text-muted tracking-wide uppercase">
+                Scan to view
+              </p>
+            </div>
+            <ShareButton url={shareUrl} onOpen={() => setShareModeOpen(true)} />
+            <SaveContactButton
+              handle={profile.handle}
+              fields={ctx}
+              profileUrl={shareUrl}
+            />
           </div>
-          <p className="font-light text-xs text-muted tracking-wide uppercase">
-            Scan to view
-          </p>
-        </div>
-        <ShareButton url={shareUrl} onOpen={() => setShareModeOpen(true)} />
-        <SaveContactButton
-          handle={profile.handle}
-          fields={ctx}
-          profileUrl={shareUrl}
-        />
-      </div>
+        </>
+      )}
 
       {/* Share Mode — full-screen overlay triggered by Send Pryma */}
       {shareModeOpen && (
