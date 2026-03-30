@@ -4,12 +4,18 @@ import { useState } from "react";
 
 interface ShareButtonProps {
   url: string;
+  // When provided, clicking opens Share Mode instead of native share/clipboard
+  onOpen?: () => void;
 }
 
-export function ShareButton({ url }: ShareButtonProps) {
+export function ShareButton({ url, onOpen }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleShare() {
+    if (onOpen) {
+      onOpen();
+      return;
+    }
     if (navigator.share) {
       await navigator.share({ title: "Pryma", url });
     } else {

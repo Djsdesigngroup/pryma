@@ -14,6 +14,7 @@ import { PrymaLogo } from "@/components/PrymaLogo";
 import { ShareButton } from "@/components/ShareButton";
 import { SaveContactButton } from "@/components/SaveContactButton";
 import { ProfileQR } from "@/components/QRCode";
+import { ShareMode } from "@/components/ShareMode";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { ContactRow } from "@/components/ContactRow";
 
@@ -35,6 +36,7 @@ export function ProfileCard({
   const router = useRouter();
   const [mode, setMode] = useState<ContextMode>(initialContext);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [shareModeOpen, setShareModeOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Owners load their last-used context from localStorage
@@ -74,10 +76,16 @@ export function ProfileCard({
   // Normalize website so bare domains like "pryma.id" form valid hrefs
   const normalizedWebsite = ctx.website ? normalizeUrl(ctx.website) : undefined;
 
+  // Context-aware share URL — professional recipients land on the professional view
+  const shareUrl =
+    mode === "professional"
+      ? `${profileUrl}?context=professional`
+      : profileUrl;
+
   const bioLines = ctx.bio?.split("\n\n").filter(Boolean) ?? [];
 
   return (
-    <div className="relative flex flex-col items-center gap-6 w-full max-w-profile mx-auto px-6 py-12">
+    <div className="relative flex flex-col items-center gap-4 w-full max-w-profile mx-auto px-6 py-4">
 
       {/* Owner actions menu — quiet ··· in top-right, only for the owner */}
       {isOwner && (
@@ -210,21 +218,32 @@ export function ProfileCard({
 
       {/* Actions + QR */}
       <div className="flex flex-col items-center gap-4">
-        <ShareButton url={profileUrl} />
-        <SaveContactButton
-          handle={profile.handle}
-          fields={ctx}
-          profileUrl={profileUrl}
-        />
-        <div className="flex flex-col items-center gap-3 mt-1">
+        <div className="flex flex-col items-center gap-3">
           <div className="bg-[#111111] rounded-xl p-4">
-            <ProfileQR url={profileUrl} />
+            <ProfileQR url={shareUrl} />
           </div>
           <p className="font-light text-xs text-muted tracking-wide uppercase">
             Scan to view
           </p>
         </div>
+        <ShareButton url={shareUrl} onOpen={() => setShareModeOpen(true)} />
+        <SaveContactButton
+          handle={profile.handle}
+          fields={ctx}
+          profileUrl={shareUrl}
+        />
       </div>
+
+      {/* Share Mode — full-screen overlay triggered by Send Pryma */}
+      {shareModeOpen && (
+        <ShareMode
+          url={shareUrl}
+          mode={mode}
+          handle={profile.handle}
+          ctx={ctx}
+          onClose={() => setShareModeOpen(false)}
+        />
+      )}
     </div>
   );
 }
