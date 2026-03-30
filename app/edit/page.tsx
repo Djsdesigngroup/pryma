@@ -277,6 +277,54 @@ export default function EditPage() {
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
               <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
+                Profile photo
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center gap-3">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={avatarLoading}
+                className="w-20 h-20 rounded-full overflow-hidden border border-border/30 flex items-center justify-center transition-all duration-200 ease-out hover:border-primary/30 group"
+                aria-label="Change profile photo"
+              >
+                {form.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={form.avatar_url}
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-muted text-2xl font-light group-hover:text-secondary transition-colors duration-200 select-none">
+                    {form.full_name?.charAt(0)?.toUpperCase() || "+"}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={avatarLoading}
+                className="font-light text-[11px] text-muted hover:text-secondary transition-colors duration-200 ease-out tracking-wide uppercase disabled:opacity-50"
+              >
+                {avatarLoading ? "Uploading…" : form.avatar_url ? "Change photo" : "Add photo"}
+              </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
                 Profile details
               </p>
             </div>
@@ -367,13 +415,7 @@ export default function EditPage() {
             </p>
 
             <div className="w-full rounded-[28px] border border-border/40 bg-surface/60 px-5 py-6 flex flex-col items-center text-center gap-4 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={avatarLoading}
-                className="w-20 h-20 rounded-full overflow-hidden border border-border/30 flex items-center justify-center transition-all duration-200 ease-out hover:border-primary/30 group"
-                aria-label="Change profile photo"
-              >
+              <div className="w-20 h-20 rounded-full overflow-hidden border border-border/30 flex items-center justify-center">
                 {form.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -382,28 +424,11 @@ export default function EditPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-muted text-2xl font-light group-hover:text-secondary transition-colors duration-200 select-none">
+                  <span className="text-muted text-2xl font-light select-none">
                     {form.full_name?.charAt(0)?.toUpperCase() || "+"}
                   </span>
                 )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={avatarLoading}
-                className="font-light text-[11px] text-muted hover:text-secondary transition-colors duration-200 ease-out tracking-wide uppercase disabled:opacity-50"
-              >
-                {avatarLoading ? "Uploading…" : form.avatar_url ? "Change photo" : "Add photo"}
-              </button>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarChange}
-              />
+              </div>
 
               <div className="flex flex-col items-center gap-1">
                 <p className="text-[18px] font-medium tracking-[-0.01em] text-primary">
