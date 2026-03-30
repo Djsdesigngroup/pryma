@@ -11,33 +11,63 @@ import { HandleInput } from "@/components/HandleInput";
 
 interface EditForm {
   handle: string;
-  full_name: string;
-  role_title: string;
-  organization: string;
-  avatar_url: string;
-  phone: string;
-  email: string;
+
+  public_full_name: string;
+  professional_full_name: string;
+
+  public_role_title: string;
+  professional_role_title: string;
+
+  public_organization: string;
+  professional_organization: string;
+
+  public_avatar_url: string;
+  professional_avatar_url: string;
+
+  public_phone: string;
+  professional_phone: string;
+
+  public_email: string;
+  professional_email: string;
+
   public_bio: string;
-  public_website: string;
-  public_location: string;
   professional_bio: string;
+
+  public_website: string;
   professional_website: string;
+
+  public_location: string;
   professional_location: string;
 }
 
 const EMPTY: EditForm = {
   handle: "",
-  full_name: "",
-  role_title: "",
-  organization: "",
-  avatar_url: "",
-  phone: "",
-  email: "",
+
+  public_full_name: "",
+  professional_full_name: "",
+
+  public_role_title: "",
+  professional_role_title: "",
+
+  public_organization: "",
+  professional_organization: "",
+
+  public_avatar_url: "",
+  professional_avatar_url: "",
+
+  public_phone: "",
+  professional_phone: "",
+
+  public_email: "",
+  professional_email: "",
+
   public_bio: "",
-  public_website: "",
-  public_location: "",
   professional_bio: "",
+
+  public_website: "",
   professional_website: "",
+
+  public_location: "",
   professional_location: "",
 };
 
@@ -86,17 +116,32 @@ export default function EditPage() {
       setHandleValid(true);
       setForm({
         handle: profile.handle,
-        full_name: profile.full_name,
-        role_title: profile.role_title ?? "",
-        organization: profile.organization ?? "",
-        avatar_url: profile.avatar_url ?? "",
-        phone: profile.phone ?? "",
-        email: profile.email ?? "",
+
+        public_full_name: profile.public_full_name ?? "",
+        professional_full_name: profile.professional_full_name ?? "",
+
+        public_role_title: profile.public_role_title ?? "",
+        professional_role_title: profile.professional_role_title ?? "",
+
+        public_organization: profile.public_organization ?? "",
+        professional_organization: profile.professional_organization ?? "",
+
+        public_avatar_url: profile.public_avatar_url ?? "",
+        professional_avatar_url: profile.professional_avatar_url ?? "",
+
+        public_phone: profile.public_phone ?? "",
+        professional_phone: profile.professional_phone ?? "",
+
+        public_email: profile.public_email ?? "",
+        professional_email: profile.professional_email ?? "",
+
         public_bio: profile.public_bio ?? "",
-        public_website: profile.public_website ?? "",
-        public_location: profile.public_location ?? "",
         professional_bio: profile.professional_bio ?? "",
+
+        public_website: profile.public_website ?? "",
         professional_website: profile.professional_website ?? "",
+
+        public_location: profile.public_location ?? "",
         professional_location: profile.professional_location ?? "",
       });
     }
@@ -110,6 +155,26 @@ export default function EditPage() {
     setError(null);
   }
 
+  const fullNameKey = `${activeContext}_full_name` as keyof EditForm;
+  const roleTitleKey = `${activeContext}_role_title` as keyof EditForm;
+  const organizationKey = `${activeContext}_organization` as keyof EditForm;
+  const avatarKey = `${activeContext}_avatar_url` as keyof EditForm;
+  const phoneKey = `${activeContext}_phone` as keyof EditForm;
+  const emailKey = `${activeContext}_email` as keyof EditForm;
+  const bioKey = `${activeContext}_bio` as keyof EditForm;
+  const websiteKey = `${activeContext}_website` as keyof EditForm;
+  const locationKey = `${activeContext}_location` as keyof EditForm;
+
+  const activeName = form[fullNameKey];
+  const activeRole = form[roleTitleKey];
+  const activeOrganization = form[organizationKey];
+  const activeAvatar = form[avatarKey];
+  const activePhone = form[phoneKey];
+  const activeEmail = form[emailKey];
+  const activeBio = form[bioKey];
+  const activeWebsite = form[websiteKey];
+  const activeLocation = form[locationKey];
+
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
@@ -119,13 +184,7 @@ export default function EditPage() {
 
     const supabase = createClient();
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-    const path = `${userId}/avatar-${Date.now()}.${ext}`;
-
-    console.log("[edit] avatar upload →", {
-      intendedPath: path,
-      size: file.size,
-      type: file.type,
-    });
+    const path = `${userId}/${activeContext}-avatar-${Date.now()}.${ext}`;
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("avatars")
@@ -143,31 +202,23 @@ export default function EditPage() {
     }
 
     const confirmedPath = uploadData.path;
-    console.log("[edit] avatar upload ✓", {
-      confirmedPath,
-      fullPath: uploadData.fullPath,
-    });
-
     const { data: urlData } = supabase.storage
       .from("avatars")
       .getPublicUrl(confirmedPath);
 
     const newUrl = urlData.publicUrl;
-    console.log("[edit] avatar public URL:", newUrl);
 
-    setForm((prev) => ({ ...prev, avatar_url: newUrl }));
+    setForm((prev) => ({ ...prev, [avatarKey]: newUrl }));
     setSaved(false);
 
     const { error: dbError } = await supabase
       .from("profiles")
-      .update({ avatar_url: newUrl, updated_at: new Date().toISOString() })
+      .update({ [avatarKey]: newUrl, updated_at: new Date().toISOString() })
       .eq("user_id", userId);
 
     if (dbError) {
-      console.error("[edit] avatar_url DB save failed:", dbError.message);
+      console.error("[edit] avatar DB save failed:", dbError.message);
       setError(`Photo uploaded but not saved: ${dbError.message}`);
-    } else {
-      console.log("[edit] avatar_url saved to DB ✓");
     }
 
     setAvatarLoading(false);
@@ -180,25 +231,41 @@ export default function EditPage() {
     setError(null);
 
     const normalizedPublicWebsite = normalizeUrl(form.public_website);
-    const normalizedProfWebsite = normalizeUrl(form.professional_website);
+    const normalizedProfessionalWebsite = normalizeUrl(form.professional_website);
 
     const supabase = createClient();
     const { error: saveError } = await supabase
       .from("profiles")
       .update({
         handle: form.handle,
-        full_name: form.full_name,
-        role_title: form.role_title || null,
-        organization: form.organization || null,
-        avatar_url: form.avatar_url || null,
-        phone: form.phone || null,
-        email: form.email || null,
+
+        public_full_name: form.public_full_name || null,
+        professional_full_name: form.professional_full_name || null,
+
+        public_role_title: form.public_role_title || null,
+        professional_role_title: form.professional_role_title || null,
+
+        public_organization: form.public_organization || null,
+        professional_organization: form.professional_organization || null,
+
+        public_avatar_url: form.public_avatar_url || null,
+        professional_avatar_url: form.professional_avatar_url || null,
+
+        public_phone: form.public_phone || null,
+        professional_phone: form.professional_phone || null,
+
+        public_email: form.public_email || null,
+        professional_email: form.professional_email || null,
+
         public_bio: form.public_bio || null,
-        public_website: normalizedPublicWebsite || null,
-        public_location: form.public_location || null,
         professional_bio: form.professional_bio || null,
-        professional_website: normalizedProfWebsite || null,
+
+        public_website: normalizedPublicWebsite || null,
+        professional_website: normalizedProfessionalWebsite || null,
+
+        public_location: form.public_location || null,
         professional_location: form.professional_location || null,
+
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", userId);
@@ -212,7 +279,7 @@ export default function EditPage() {
       setForm((prev) => ({
         ...prev,
         public_website: normalizedPublicWebsite,
-        professional_website: normalizedProfWebsite,
+        professional_website: normalizedProfessionalWebsite,
       }));
       setSaved(true);
       setOriginalHandle(form.handle);
@@ -225,19 +292,6 @@ export default function EditPage() {
     await supabase.auth.signOut();
     router.push("/auth");
   }
-
-  const activeBio =
-    activeContext === "professional" ? form.professional_bio : form.public_bio;
-
-  const activeWebsite =
-    activeContext === "professional"
-      ? form.professional_website
-      : form.public_website;
-
-  const activeLocation =
-    activeContext === "professional"
-      ? form.professional_location
-      : form.public_location;
 
   if (!userId) {
     return (
@@ -258,14 +312,12 @@ export default function EditPage() {
         </div>
 
         <div className="flex flex-col gap-8">
-          <div className="flex flex-col gap-5">
-            <HandleInput
-              value={form.handle}
-              onChange={(v) => set("handle", v)}
-              currentHandle={originalHandle}
-              onValidChange={setHandleValid}
-            />
-          </div>
+          <HandleInput
+            value={form.handle}
+            onChange={(v) => set("handle", v)}
+            currentHandle={originalHandle}
+            onValidChange={setHandleValid}
+          />
 
           <div className="flex flex-col items-center gap-2">
             <SegmentedControl value={activeContext} onChange={setActiveContext} />
@@ -274,12 +326,10 @@ export default function EditPage() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
-                Profile photo
-              </p>
-            </div>
+          <div className="flex flex-col gap-3">
+            <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
+              Profile photo
+            </p>
 
             <div className="flex flex-col items-center gap-3">
               <button
@@ -289,16 +339,16 @@ export default function EditPage() {
                 className="w-20 h-20 rounded-full overflow-hidden border border-border/30 flex items-center justify-center transition-all duration-200 ease-out hover:border-primary/30 group"
                 aria-label="Change profile photo"
               >
-                {form.avatar_url ? (
+                {activeAvatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={form.avatar_url}
+                    src={activeAvatar}
                     alt="Avatar"
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <span className="text-muted text-2xl font-light group-hover:text-secondary transition-colors duration-200 select-none">
-                    {form.full_name?.charAt(0)?.toUpperCase() || "+"}
+                    {activeName?.charAt(0)?.toUpperCase() || "+"}
                   </span>
                 )}
               </button>
@@ -309,7 +359,7 @@ export default function EditPage() {
                 disabled={avatarLoading}
                 className="font-light text-[11px] text-muted hover:text-secondary transition-colors duration-200 ease-out tracking-wide uppercase disabled:opacity-50"
               >
-                {avatarLoading ? "Uploading…" : form.avatar_url ? "Change photo" : "Add photo"}
+                {avatarLoading ? "Uploading…" : activeAvatar ? "Change photo" : "Add photo"}
               </button>
 
               <input
@@ -323,88 +373,71 @@ export default function EditPage() {
           </div>
 
           <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
-                Profile details
-              </p>
-            </div>
+            <EditableField
+              label="Full name"
+              value={activeName}
+              onChange={(value) => set(fullNameKey, value)}
+              placeholder="Full name…"
+              required
+            />
 
-            {(
-              [
-                { key: "full_name", label: "Full name", required: true, type: "text" },
-                { key: "role_title", label: "Role / title", type: "text" },
-                { key: "organization", label: "Organization", type: "text" },
-              ] as const
-            ).map((field) => (
-              <div key={field.key} className="flex flex-col gap-1.5">
-                <label
-                  htmlFor={field.key}
-                  className="font-light text-xs text-muted tracking-wide uppercase"
-                >
-                  {field.label}
-                  {"required" in field && field.required && <span className="ml-1">*</span>}
-                </label>
-                <input
-                  id={field.key}
-                  type={field.type}
-                  value={form[field.key]}
-                  onChange={(e) => set(field.key, e.target.value)}
-                  placeholder={`${field.label}…`}
-                  className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
-                />
-              </div>
-            ))}
-          </div>
+            <EditableField
+              label="Role / title"
+              value={activeRole}
+              onChange={(value) => set(roleTitleKey, value)}
+              placeholder="Role / title…"
+            />
 
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
-                Contact
-              </p>
-            </div>
+            <EditableField
+              label="Organization"
+              value={activeOrganization}
+              onChange={(value) => set(organizationKey, value)}
+              placeholder="Organization…"
+            />
 
-            {(
-              [
-                { key: "phone", label: "Phone", type: "tel" },
-                { key: "email", label: "Email", type: "email" },
-              ] as const
-            ).map((field) => (
-              <div key={field.key} className="flex flex-col gap-1.5">
-                <label
-                  htmlFor={field.key}
-                  className="font-light text-xs text-muted tracking-wide uppercase"
-                >
-                  {field.label}
-                </label>
-                <input
-                  id={field.key}
-                  type={field.type}
-                  value={form[field.key]}
-                  onChange={(e) => set(field.key, e.target.value)}
-                  placeholder={`${field.label}…`}
-                  className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
-                />
-              </div>
-            ))}
-          </div>
+            <EditableField
+              label="Phone"
+              value={activePhone}
+              onChange={(value) => set(phoneKey, value)}
+              placeholder="Phone…"
+              type="tel"
+            />
 
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
-                {activeContext} view
-              </p>
-            </div>
+            <EditableField
+              label="Email"
+              value={activeEmail}
+              onChange={(value) => set(emailKey, value)}
+              placeholder="Email…"
+              type="email"
+            />
 
-            {activeContext === "public" ? (
-              <ContextFields key="public" ctx="public" form={form} set={set} />
-            ) : (
-              <ContextFields
-                key="professional"
-                ctx="professional"
-                form={form}
-                set={set}
+            <div className="flex flex-col gap-1.5">
+              <label className="font-light text-xs text-muted tracking-wide uppercase">
+                Bio
+              </label>
+              <textarea
+                value={activeBio}
+                onChange={(e) => set(bioKey, e.target.value)}
+                rows={4}
+                placeholder="Bio…"
+                className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out resize-none leading-relaxed"
               />
-            )}
+            </div>
+
+            <EditableField
+              label="Website"
+              value={activeWebsite}
+              onChange={(value) => set(websiteKey, value)}
+              placeholder="Website…"
+              type="url"
+            />
+
+            <EditableField
+              label="Location"
+              value={activeLocation}
+              onChange={(value) => set(locationKey, value)}
+              placeholder="Location…"
+            />
           </div>
 
           <div className="border-t border-border opacity-20" />
@@ -416,28 +449,28 @@ export default function EditPage() {
 
             <div className="w-full rounded-[28px] border border-border/40 bg-surface/60 px-5 py-6 flex flex-col items-center text-center gap-4 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
               <div className="w-20 h-20 rounded-full overflow-hidden border border-border/30 flex items-center justify-center">
-                {form.avatar_url ? (
+                {activeAvatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={form.avatar_url}
+                    src={activeAvatar}
                     alt="Avatar"
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <span className="text-muted text-2xl font-light select-none">
-                    {form.full_name?.charAt(0)?.toUpperCase() || "+"}
+                    {activeName?.charAt(0)?.toUpperCase() || "+"}
                   </span>
                 )}
               </div>
 
               <div className="flex flex-col items-center gap-1">
                 <p className="text-[18px] font-medium tracking-[-0.01em] text-primary">
-                  {form.full_name || "Your name"}
+                  {activeName || "Your name"}
                 </p>
 
-                {(form.role_title || form.organization) && (
+                {(activeRole || activeOrganization) && (
                   <p className="text-[13px] font-light text-secondary/80">
-                    {[form.role_title, form.organization].filter(Boolean).join(" · ")}
+                    {[activeRole, activeOrganization].filter(Boolean).join(" · ")}
                   </p>
                 )}
               </div>
@@ -508,57 +541,36 @@ export default function EditPage() {
   );
 }
 
-interface ContextFieldsProps {
-  ctx: "public" | "professional";
-  form: EditForm;
-  set: (key: keyof EditForm, value: string) => void;
+interface EditableFieldProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  type?: React.InputHTMLAttributes<HTMLInputElement>["type"];
+  required?: boolean;
 }
 
-function ContextFields({ ctx, form, set }: ContextFieldsProps) {
-  const bioKey = `${ctx}_bio` as keyof EditForm;
-  const webKey = `${ctx}_website` as keyof EditForm;
-  const locKey = `${ctx}_location` as keyof EditForm;
-
+function EditableField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  required = false,
+}: EditableFieldProps) {
   return (
-    <>
-      <div className="flex flex-col gap-1.5">
-        <label className="font-light text-xs text-muted tracking-wide uppercase">
-          Bio
-        </label>
-        <textarea
-          value={form[bioKey]}
-          onChange={(e) => set(bioKey, e.target.value)}
-          rows={4}
-          placeholder="Bio…"
-          className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out resize-none leading-relaxed"
-        />
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <label className="font-light text-xs text-muted tracking-wide uppercase">
-          Website
-        </label>
-        <input
-          type="url"
-          value={form[webKey]}
-          onChange={(e) => set(webKey, e.target.value)}
-          placeholder="Website…"
-          className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
-        />
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <label className="font-light text-xs text-muted tracking-wide uppercase">
-          Location
-        </label>
-        <input
-          type="text"
-          value={form[locKey]}
-          onChange={(e) => set(locKey, e.target.value)}
-          placeholder="Location…"
-          className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
-        />
-      </div>
-    </>
+    <div className="flex flex-col gap-1.5">
+      <label className="font-light text-xs text-muted tracking-wide uppercase">
+        {label}
+        {required && <span className="ml-1">*</span>}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
+      />
+    </div>
   );
 }

@@ -2,19 +2,11 @@ import { ContextMode, DbProfile, PrymaProfile } from "@/types/profile";
 
 const MODE_KEY = "pryma_context_mode";
 
-// ─── URL normalization ─────────────────────────────────────────────────────────
-// Adds https:// when no protocol is present so bare domains don't produce
-// broken relative links. Already-valid http:// and https:// entries pass through.
-
 export function normalizeUrl(url: string): string {
   if (!url || url.trim() === "") return url;
   if (/^https?:\/\//i.test(url)) return url;
   return `https://${url}`;
 }
-
-// ─── Demo seed ────────────────────────────────────────────────────────────────
-// Used as fallback for /u/dom when no DB record exists.
-// Bios use \n\n (double newline) so ProfileCard's paragraph splitter works correctly.
 
 export const DEFAULT_PROFILE: PrymaProfile = {
   handle: "dom",
@@ -27,8 +19,6 @@ export const DEFAULT_PROFILE: PrymaProfile = {
     "Founder of Pryma.\n\nOpen to conversations around identity systems, product, and early-stage infrastructure.",
   locationProfessional: "Pennsylvania, US",
 };
-
-// ─── DB conversions ───────────────────────────────────────────────────────────
 
 export function dbProfileToCard(db: DbProfile): PrymaProfile {
   return {
@@ -48,9 +38,31 @@ export function dbProfileToCard(db: DbProfile): PrymaProfile {
   };
 }
 
-// ─── Context mode (localStorage preference) ───────────────────────────────────
+export function getProfileForContext(
+  profile: PrymaProfile,
+  mode: ContextMode
+): {
+  bio: string;
+  website?: string;
+  location?: string;
+} {
+  if (mode === "professional") {
+    return {
+      bio: profile.bioProfessional ?? profile.bio,
+      website: profile.websiteProfessional ?? profile.website,
+      location: profile.locationProfessional ?? profile.location,
+    };
+  }
+
+  return {
+    bio: profile.bio,
+    website: profile.website,
+    location: profile.location,
+  };
+}
 
 export function saveContextMode(mode: ContextMode): void {
+  if (typeof window === "undefined") return;
   localStorage.setItem(MODE_KEY, mode);
 }
 
