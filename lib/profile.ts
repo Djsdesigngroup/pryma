@@ -1,4 +1,4 @@
-import { ContextMode, DbProfile, PrymaProfile } from "@/types/profile";
+import type { ContextMode, DbProfile, PrymaProfile } from "@/types/profile";
 
 const MODE_KEY = "pryma_context_mode";
 
@@ -10,54 +10,86 @@ export function normalizeUrl(url: string): string {
 
 export const DEFAULT_PROFILE: PrymaProfile = {
   handle: "dom",
-  name: "Dominic Santalucia",
-  role: "Founder",
-  organization: "Pryma",
-  bio: "Building infrastructure for a more transparent, human internet.\n\nFocused on identity, trust, and how we interact online.",
-  location: "Pennsylvania, US",
-  bioProfessional:
+  publicFullName: "Dominic Santalucia",
+  professionalFullName: "Dominic Santalucia",
+  publicRoleTitle: "Founder",
+  professionalRoleTitle: "Founder",
+  publicOrganization: "Pryma",
+  professionalOrganization: "Pryma",
+  publicBio:
+    "Building infrastructure for a more transparent, human internet.\n\nFocused on identity, trust, and how we interact online.",
+  publicLocation: "Pennsylvania, US",
+  professionalBio:
     "Founder of Pryma.\n\nOpen to conversations around identity systems, product, and early-stage infrastructure.",
-  locationProfessional: "Pennsylvania, US",
+  professionalLocation: "Pennsylvania, US",
 };
 
 export function dbProfileToCard(db: DbProfile): PrymaProfile {
   return {
     handle: db.handle,
-    name: db.full_name,
-    role: db.role_title ?? "",
-    organization: db.organization ?? "",
-    bio: db.public_bio ?? "",
-    website: db.public_website ?? undefined,
-    location: db.public_location ?? undefined,
-    bioProfessional: db.professional_bio ?? undefined,
-    websiteProfessional: db.professional_website ?? undefined,
-    locationProfessional: db.professional_location ?? undefined,
-    phone: db.phone ?? undefined,
-    email: db.email ?? undefined,
-    avatarUrl: db.avatar_url ?? undefined,
+    publicFullName: db.public_full_name ?? undefined,
+    professionalFullName: db.professional_full_name ?? undefined,
+    publicRoleTitle: db.public_role_title ?? undefined,
+    professionalRoleTitle: db.professional_role_title ?? undefined,
+    publicOrganization: db.public_organization ?? undefined,
+    professionalOrganization: db.professional_organization ?? undefined,
+    publicAvatarUrl: db.public_avatar_url ?? undefined,
+    professionalAvatarUrl: db.professional_avatar_url ?? undefined,
+    publicPhone: db.public_phone ?? undefined,
+    professionalPhone: db.professional_phone ?? undefined,
+    publicEmail: db.public_email ?? undefined,
+    professionalEmail: db.professional_email ?? undefined,
+    publicBio: db.public_bio ?? undefined,
+    professionalBio: db.professional_bio ?? undefined,
+    publicWebsite: db.public_website ?? undefined,
+    professionalWebsite: db.professional_website ?? undefined,
+    publicLocation: db.public_location ?? undefined,
+    professionalLocation: db.professional_location ?? undefined,
   };
 }
 
-export function getProfileForContext(
-  profile: PrymaProfile,
-  mode: ContextMode
-): {
-  bio: string;
+// Flat display fields resolved for the active context.
+// Professional falls back to public when a professional field is not set.
+export interface ResolvedContext {
+  name: string;
+  role?: string;
+  organization?: string;
+  avatarUrl?: string;
+  phone?: string;
+  email?: string;
+  bio?: string;
   website?: string;
   location?: string;
-} {
+}
+
+export function resolveContext(
+  profile: PrymaProfile,
+  mode: ContextMode
+): ResolvedContext {
   if (mode === "professional") {
     return {
-      bio: profile.bioProfessional ?? profile.bio,
-      website: profile.websiteProfessional ?? profile.website,
-      location: profile.locationProfessional ?? profile.location,
+      name: profile.professionalFullName ?? profile.publicFullName ?? "",
+      role: profile.professionalRoleTitle ?? profile.publicRoleTitle,
+      organization:
+        profile.professionalOrganization ?? profile.publicOrganization,
+      avatarUrl: profile.professionalAvatarUrl ?? profile.publicAvatarUrl,
+      phone: profile.professionalPhone ?? profile.publicPhone,
+      email: profile.professionalEmail ?? profile.publicEmail,
+      bio: profile.professionalBio ?? profile.publicBio,
+      website: profile.professionalWebsite ?? profile.publicWebsite,
+      location: profile.professionalLocation ?? profile.publicLocation,
     };
   }
-
   return {
-    bio: profile.bio,
-    website: profile.website,
-    location: profile.location,
+    name: profile.publicFullName ?? "",
+    role: profile.publicRoleTitle,
+    organization: profile.publicOrganization,
+    avatarUrl: profile.publicAvatarUrl,
+    phone: profile.publicPhone,
+    email: profile.publicEmail,
+    bio: profile.publicBio,
+    website: profile.publicWebsite,
+    location: profile.publicLocation,
   };
 }
 

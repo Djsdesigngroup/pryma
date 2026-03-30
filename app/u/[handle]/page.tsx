@@ -9,17 +9,18 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileCard } from "@/components/ProfileCard";
 import { PrymaLogo } from "@/components/PrymaLogo";
 import { DEFAULT_PROFILE, dbProfileToCard } from "@/lib/profile";
-import type { DbProfile } from "@/types/profile";
+import type { ContextMode, DbProfile } from "@/types/profile";
 
 interface Props {
   params: { handle: string };
+  searchParams: { context?: string };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("full_name, role_title, organization")
+    .select("public_full_name, public_role_title, public_organization")
     .eq("handle", params.handle)
     .maybeSingle();
 
@@ -32,18 +33,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!data) return { title: `@${params.handle} — Pryma` };
 
-  const desc = [data.role_title, data.organization ? `at ${data.organization}` : null]
+  const desc = [
+    data.public_role_title,
+    data.public_organization ? `at ${data.public_organization}` : null,
+  ]
     .filter(Boolean)
     .join(" ");
 
   return {
-    title: `${data.full_name} — Pryma`,
+    title: `${data.public_full_name ?? params.handle} — Pryma`,
     description: desc || "View profile on Pryma.",
   };
 }
 
-export default async function ProfilePage({ params }: Props) {
+export default async function ProfilePage({ params, searchParams }: Props) {
   const { handle } = params;
+
+  // Resolve context from query param; default to "public" for non-owners
+  const initialContext: ContextMode =
+    searchParams.context === "professional" ? "professional" : "public";
 
   // Resolve profile URL from request host
   const headersList = headers();
@@ -78,7 +86,12 @@ export default async function ProfilePage({ params }: Props) {
     const isOwner = !!user && user.id === (dbProfile as DbProfile).user_id;
     return (
       <main className="min-h-screen flex flex-col items-center py-12">
-        <ProfileCard profile={profile} profileUrl={profileUrl} isOwner={isOwner} />
+        <ProfileCard
+          profile={profile}
+          profileUrl={profileUrl}
+          isOwner={isOwner}
+          initialContext={initialContext}
+        />
       </main>
     );
   }
@@ -89,7 +102,11 @@ export default async function ProfilePage({ params }: Props) {
   if (handle === "dom") {
     return (
       <main className="min-h-screen flex flex-col items-center py-12">
-        <ProfileCard profile={DEFAULT_PROFILE} profileUrl={profileUrl} />
+        <ProfileCard
+          profile={DEFAULT_PROFILE}
+          profileUrl={profileUrl}
+          initialContext={initialContext}
+        />
       </main>
     );
   }

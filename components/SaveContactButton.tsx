@@ -1,27 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { PrymaProfile } from "@/types/profile";
+import type { ResolvedContext } from "@/lib/profile";
 import { generateVCF } from "@/lib/vcf";
 
 interface SaveContactButtonProps {
-  profile: PrymaProfile;
+  handle: string;
+  fields: ResolvedContext;
   profileUrl: string;
 }
 
 export function SaveContactButton({
-  profile,
+  handle,
+  fields,
   profileUrl,
 }: SaveContactButtonProps) {
   const [saved, setSaved] = useState(false);
 
   function handleSave() {
-    const vcf = generateVCF(profile, profileUrl);
+    const vcf = generateVCF(handle, fields, profileUrl);
     const blob = new Blob([vcf], { type: "text/vcard;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${profile.handle || profile.name.toLowerCase().replace(/\s+/g, "-")}.vcf`;
+    a.download = `${handle || fields.name.toLowerCase().replace(/\s+/g, "-")}.vcf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

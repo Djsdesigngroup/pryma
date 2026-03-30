@@ -3,7 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ContextMode, PrymaProfile } from "@/types/profile";
-import { loadContextMode, normalizeUrl, saveContextMode } from "@/lib/profile";
+import {
+  loadContextMode,
+  normalizeUrl,
+  resolveContext,
+  saveContextMode,
+} from "@/lib/profile";
 import { createClient } from "@/lib/supabase/client";
 import { PrymaLogo } from "@/components/PrymaLogo";
 import { ShareButton } from "@/components/ShareButton";
@@ -17,17 +22,27 @@ interface ProfileCardProps {
   profileUrl: string;
   // Renders the owner ··· menu when true — set server-side via auth check
   isOwner?: boolean;
+  // Context to display for non-owners (from ?context= query param, default "public")
+  initialContext?: ContextMode;
 }
 
-export function ProfileCard({ profile, profileUrl, isOwner = false }: ProfileCardProps) {
+export function ProfileCard({
+  profile,
+  profileUrl,
+  isOwner = false,
+  initialContext = "public",
+}: ProfileCardProps) {
   const router = useRouter();
-  const [mode, setMode] = useState<ContextMode>("public");
+  const [mode, setMode] = useState<ContextMode>(initialContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Owners load their last-used context from localStorage
   useEffect(() => {
-    setMode(loadContextMode());
-  }, []);
+    if (isOwner) {
+      setMode(loadContextMode());
+    }
+  }, [isOwner]);
 
   // Close owner menu on outside click
   useEffect(() => {
@@ -52,24 +67,14 @@ export function ProfileCard({ profile, profileUrl, isOwner = false }: ProfileCar
     router.push("/auth");
   }
 
-  // Resolve active context fields
-  const activeBio =
-    mode === "professional" && profile.bioProfessional
-      ? profile.bioProfessional
-      : profile.bio;
-  const activeWebsite =
-    mode === "professional" && profile.websiteProfessional !== undefined
-      ? profile.websiteProfessional
-      : profile.website;
-  const activeLocation =
-    mode === "professional" && profile.locationProfessional !== undefined
-      ? profile.locationProfessional
-      : profile.location;
+  // Resolve all display fields for the active context.
+  // Professional fields fall back to public when not set.
+  const ctx = resolveContext(profile, mode);
 
   // Normalize website so bare domains like "pryma.id" form valid hrefs
-  const normalizedWebsite = activeWebsite ? normalizeUrl(activeWebsite) : undefined;
+  const normalizedWebsite = ctx.website ? normalizeUrl(ctx.website) : undefined;
 
-  const bioLines = activeBio?.split("\n\n").filter(Boolean) ?? [];
+  const bioLines = ctx.bio?.split("\n\n").filter(Boolean) ?? [];
 
   return (
     <div className="relative flex flex-col items-center gap-6 w-full max-w-profile mx-auto px-6 py-12">
@@ -107,21 +112,23 @@ export function ProfileCard({ profile, profileUrl, isOwner = false }: ProfileCar
       {/* Logo mark */}
       <PrymaLogo size={32} />
 
-      {/* Context mode selector */}
-      <SegmentedControl value={mode} onChange={handleModeChange} />
+      {/* Context mode selector — owners only */}
+      {isOwner && (
+        <SegmentedControl value={mode} onChange={handleModeChange} />
+      )}
 
       {/* Avatar */}
       <div className="w-20 h-20 rounded-full overflow-hidden border border-border/30 flex-shrink-0">
-        {profile.avatarUrl ? (
+        {ctx.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={profile.avatarUrl}
-            alt={profile.name}
+            src={ctx.avatarUrl}
+            alt={ctx.name}
             className="w-full h-full object-cover"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted text-2xl font-light select-none">
-            {profile.name.charAt(0).toUpperCase()}
+            {ctx.name.charAt(0).toUpperCase()}
           </div>
         )}
       </div>
@@ -129,14 +136,14 @@ export function ProfileCard({ profile, profileUrl, isOwner = false }: ProfileCar
       {/* Identity */}
       <div className="flex flex-col items-center gap-1 text-center">
         <h1 className="font-medium text-[26px] tracking-[-0.02em] text-primary">
-          {profile.name}
+          {ctx.name}
         </h1>
         <p className="font-light text-sm text-secondary">
-          {profile.role}
-          {profile.organization && (
+          {ctx.role}
+          {ctx.organization && (
             <>
               {" "}
-              <span className="text-muted">·</span> {profile.organization}
+              <span className="text-muted">·</span> {ctx.organization}
             </>
           )}
         </p>
@@ -168,7 +175,7 @@ export function ProfileCard({ profile, profileUrl, isOwner = false }: ProfileCar
             {normalizedWebsite.replace(/^https?:\/\//, "")}
           </a>
         )}
-        {activeLocation && (
+        {ctx.location && (
           <span className="flex items-center gap-1.5 font-light text-sm text-muted">
             <svg
               width="12"
@@ -186,15 +193,15 @@ export function ProfileCard({ profile, profileUrl, isOwner = false }: ProfileCar
               />
               <circle cx="6" cy="4.5" r="1" fill="currentColor" />
             </svg>
-            {activeLocation}
+            {ctx.location}
           </span>
         )}
       </div>
 
       {/* Contact row — icon-only strip, renders only if at least one item exists */}
       <ContactRow
-        phone={profile.phone}
-        email={profile.email}
+        phone={ctx.phone}
+        email={ctx.email}
         website={normalizedWebsite}
       />
 
@@ -204,7 +211,11 @@ export function ProfileCard({ profile, profileUrl, isOwner = false }: ProfileCar
       {/* Actions + QR */}
       <div className="flex flex-col items-center gap-4">
         <ShareButton url={profileUrl} />
-        <SaveContactButton profile={profile} profileUrl={profileUrl} />
+        <SaveContactButton
+          handle={profile.handle}
+          fields={ctx}
+          profileUrl={profileUrl}
+        />
         <div className="flex flex-col items-center gap-3 mt-1">
           <div className="bg-[#111111] rounded-xl p-4">
             <ProfileQR url={profileUrl} />

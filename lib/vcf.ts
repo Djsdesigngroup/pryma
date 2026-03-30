@@ -1,21 +1,25 @@
-import { PrymaProfile } from "@/types/profile";
+import type { ResolvedContext } from "@/lib/profile";
 
-export function generateVCF(profile: PrymaProfile, profileUrl: string): string {
-  const nameParts = profile.name.trim().split(/\s+/);
+export function generateVCF(
+  handle: string,
+  fields: ResolvedContext,
+  profileUrl: string
+): string {
+  const nameParts = fields.name.trim().split(/\s+/);
   const firstName = nameParts[0] ?? "";
   const lastName = nameParts.slice(1).join(" ");
 
   const lines = [
     "BEGIN:VCARD",
     "VERSION:3.0",
-    `FN:${esc(profile.name)}`,
+    `FN:${esc(fields.name)}`,
     `N:${esc(lastName)};${esc(firstName)};;;`,
-    profile.role ? `TITLE:${esc(profile.role)}` : null,
-    profile.organization ? `ORG:${esc(profile.organization)}` : null,
-    profile.phone ? `TEL;type=CELL:${esc(profile.phone)}` : null,
-    profile.email ? `EMAIL;type=INTERNET:${esc(profile.email)}` : null,
-    profile.website ? `URL;type=WORK:${profile.website}` : null,
-    profile.location ? `ADR;type=HOME:;;${esc(profile.location)};;;;` : null,
+    fields.role ? `TITLE:${esc(fields.role)}` : null,
+    fields.organization ? `ORG:${esc(fields.organization)}` : null,
+    fields.phone ? `TEL;type=CELL:${esc(fields.phone)}` : null,
+    fields.email ? `EMAIL;type=INTERNET:${esc(fields.email)}` : null,
+    fields.website ? `URL;type=WORK:${fields.website}` : null,
+    fields.location ? `ADR;type=HOME:;;${esc(fields.location)};;;;` : null,
     `URL;type=pryma:${profileUrl}`,
     `NOTE:Pryma — ${profileUrl}`,
     "END:VCARD",
