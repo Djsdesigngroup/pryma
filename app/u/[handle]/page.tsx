@@ -85,7 +85,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
     // isOwner: authenticated user whose user_id matches the profile row
     const isOwner = !!user && user.id === (dbProfile as DbProfile).user_id;
     return (
-      <main className="min-h-screen flex flex-col items-center py-12">
+      <main className="min-h-screen flex flex-col items-center py-4">
         <ProfileCard
           profile={profile}
           profileUrl={profileUrl}
@@ -101,7 +101,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
   // isOwner is never set for the fallback — ownership can't be confirmed without a DB row.
   if (handle === "dom") {
     return (
-      <main className="min-h-screen flex flex-col items-center py-12">
+      <main className="min-h-screen flex flex-col items-center py-4">
         <ProfileCard
           profile={DEFAULT_PROFILE}
           profileUrl={profileUrl}

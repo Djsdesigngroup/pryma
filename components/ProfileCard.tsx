@@ -77,7 +77,7 @@ export function ProfileCard({
   const bioLines = ctx.bio?.split("\n\n").filter(Boolean) ?? [];
 
   return (
-    <div className="relative flex flex-col items-center gap-6 w-full max-w-profile mx-auto px-6 py-12">
+    <div className="relative flex flex-col items-center gap-4 w-full max-w-profile mx-auto px-6 py-4">
 
       {/* Owner actions menu — quiet ··· in top-right, only for the owner */}
       {isOwner && (
@@ -210,13 +210,7 @@ export function ProfileCard({
 
       {/* Actions + QR */}
       <div className="flex flex-col items-center gap-4">
-        <ShareButton url={profileUrl} />
-        <SaveContactButton
-          handle={profile.handle}
-          fields={ctx}
-          profileUrl={profileUrl}
-        />
-        <div className="flex flex-col items-center gap-3 mt-1">
+        <div className="flex flex-col items-center gap-3">
           <div className="bg-[#111111] rounded-xl p-4">
             <ProfileQR url={profileUrl} />
           </div>
@@ -224,6 +218,12 @@ export function ProfileCard({
             Scan to view
           </p>
         </div>
+        <ShareButton url={profileUrl} />
+        <SaveContactButton
+          handle={profile.handle}
+          fields={ctx}
+          profileUrl={profileUrl}
+        />
       </div>
     </div>
   );
