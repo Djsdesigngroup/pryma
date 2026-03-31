@@ -1,8 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { PrymaLogo } from "@/components/PrymaLogo";
 
@@ -27,11 +26,10 @@ function AuthForm() {
     setErrorMsg(null);
   }
 
-  // ── Password sign-in ────────────────────────────────────────────────────────
-
   async function handlePasswordSignIn(e: React.FormEvent) {
     e.preventDefault();
     if (!email || !password || loading) return;
+
     setLoading(true);
     setErrorMsg(null);
 
@@ -40,33 +38,35 @@ function AuthForm() {
 
     if (error) {
       setLoading(false);
-      setErrorMsg("Invalid email or password.");
+      setErrorMsg("We couldn’t sign you in. Check your details and try again.");
       return;
     }
 
-    // Redirect based on whether profile exists — mirrors callback logic.
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (user) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("handle")
         .eq("user_id", user.id)
         .maybeSingle();
+
       router.push(profile ? "/edit" : "/onboarding");
     }
-    // loading stays true — navigation is in flight
   }
-
-  // ── Magic link ──────────────────────────────────────────────────────────────
 
   async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault();
     if (!email || loading) return;
+
     setLoading(true);
     setErrorMsg(null);
 
     const supabase = createClient();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin;
+    const siteUrl =
+      (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, "");
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
@@ -85,22 +85,24 @@ function AuthForm() {
     }
   }
 
-  // ── Magic link sent ─────────────────────────────────────────────────────────
-
   if (magicSent) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6">
         <div className="flex flex-col items-center text-center gap-8 max-w-profile w-full">
           <PrymaLogo size={32} />
+
           <div className="flex flex-col gap-2">
             <p className="font-medium text-sm text-primary">Check your email</p>
             <p className="font-light text-sm text-secondary">
-              We sent a sign-in link to{" "}
-              <span className="text-primary">{email}</span>
+              We sent a sign-in link to <span className="text-primary">{email}</span>
             </p>
           </div>
+
           <button
-            onClick={() => { setMagicSent(false); setErrorMsg(null); }}
+            onClick={() => {
+              setMagicSent(false);
+              setErrorMsg(null);
+            }}
             className="font-light text-xs text-muted hover:text-secondary transition-colors duration-200 ease-out tracking-wide uppercase"
           >
             Use a different email
@@ -109,8 +111,6 @@ function AuthForm() {
       </main>
     );
   }
-
-  // ── Main form ───────────────────────────────────────────────────────────────
 
   const inputClass =
     "w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out text-center";
@@ -121,7 +121,6 @@ function AuthForm() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6">
       <div className="flex flex-col items-center gap-10 max-w-profile w-full">
-
         <PrymaLogo size={32} />
 
         <div className="flex flex-col items-center gap-2 text-center">
@@ -129,9 +128,7 @@ function AuthForm() {
             Sign in to Pryma
           </h1>
           <p className="font-light text-sm text-secondary">
-            {mode === "password"
-              ? "Sign in with your email and password."
-              : "Use your email to sign in or create your profile."}
+            New here? We&apos;ll create your profile automatically.
           </p>
         </div>
 
@@ -141,7 +138,6 @@ function AuthForm() {
           </p>
         )}
 
-        {/* Password form */}
         {mode === "password" && (
           <form
             onSubmit={handlePasswordSignIn}
@@ -150,31 +146,42 @@ function AuthForm() {
             <input
               type="email"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setErrorMsg(null); }}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setErrorMsg(null);
+              }}
               placeholder="your@email.com"
               required
               autoFocus
               className={inputClass}
             />
+
             <input
               type="password"
               value={password}
-              onChange={(e) => { setPassword(e.target.value); setErrorMsg(null); }}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setErrorMsg(null);
+              }}
               placeholder="Password"
               required
               className={inputClass}
             />
+
             <button
               type="submit"
               disabled={loading || !email || !password}
               className={primaryBtn}
             >
-              {loading ? "Signing in…" : "Sign in"}
+              {loading ? "Signing in…" : "Continue"}
             </button>
+
+            <p className="font-light text-xs text-muted/60 text-center max-w-[280px]">
+              New here or don&apos;t have a password yet? Use a magic link below.
+            </p>
           </form>
         )}
 
-        {/* Magic link form */}
         {mode === "magic" && (
           <form
             onSubmit={handleMagicLink}
@@ -183,24 +190,31 @@ function AuthForm() {
             <input
               type="email"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setErrorMsg(null); }}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setErrorMsg(null);
+              }}
               placeholder="your@email.com"
               required
               autoFocus
               className={inputClass}
             />
+
             <button
               type="submit"
               disabled={loading || !email}
               className={primaryBtn}
             >
-              {loading ? "Sending…" : "Send sign-in link"}
+              {loading ? "Sending…" : "Continue with magic link"}
             </button>
+
+            <p className="font-light text-xs text-muted/60 text-center max-w-[280px]">
+              We&apos;ll sign you in or help you set up your profile next.
+            </p>
           </form>
         )}
 
-        {/* Secondary actions */}
-        <div className="flex flex-col items-center gap-3 -mt-6">
+        <div className="flex flex-col items-center gap-3 -mt-4">
           {mode === "password" && (
             <a
               href="/auth/reset"
@@ -209,22 +223,17 @@ function AuthForm() {
               Forgot password?
             </a>
           )}
+
           <button
             type="button"
             onClick={() => switchMode(mode === "password" ? "magic" : "password")}
             className="font-light text-xs text-muted hover:text-secondary transition-colors duration-200 ease-out tracking-wide uppercase"
           >
             {mode === "password"
-              ? "Email me a magic link instead"
-              : "Sign in with password"}
+              ? "New here? Email me a magic link instead"
+              : "I already have a password"}
           </button>
         </div>
-
-        {mode === "magic" && (
-          <p className="font-light text-xs text-muted/60 text-center -mt-6">
-            If you&apos;re new, you&apos;ll set up your profile next.
-          </p>
-        )}
 
         <a
           href="/u/dom"
@@ -232,7 +241,6 @@ function AuthForm() {
         >
           View demo profile
         </a>
-
       </div>
     </main>
   );
