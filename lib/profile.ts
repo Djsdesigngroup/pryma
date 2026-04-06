@@ -13,14 +13,14 @@ export const DEFAULT_PROFILE: PrymaProfile = {
   publicFullName: "Dominic Santalucia",
   professionalFullName: "Dominic Santalucia",
   publicRoleTitle: "Founder",
-  professionalRoleTitle: "Founder",
+  professionalRoleTitle: "Founder & Product Lead",
   publicOrganization: "Pryma",
   professionalOrganization: "Pryma",
   publicBio:
     "Building infrastructure for a more transparent, human internet.\n\nFocused on identity, trust, and how we interact online.",
   publicLocation: "Pennsylvania, US",
   professionalBio:
-    "Founder of Pryma.\n\nOpen to conversations around identity systems, product, and early-stage infrastructure.",
+    "Founder of Pryma. Working on identity infrastructure, context-based contact sharing, and products that reduce friction in real-world interaction.",
   professionalLocation: "Pennsylvania, US",
 };
 

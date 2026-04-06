@@ -85,7 +85,7 @@ export function ProfileCard({
   const bioLines = ctx.bio?.split("\n\n").filter(Boolean) ?? [];
 
   return (
-    <div className="relative flex flex-col items-center gap-4 w-full max-w-profile mx-auto px-6 py-4">
+    <div className="relative flex flex-col items-center gap-5 w-full max-w-profile mx-auto px-6 py-4">
 
       {/* Owner actions menu — quiet ··· in top-right, only for the owner */}
       {isOwner && (
@@ -117,28 +117,29 @@ export function ProfileCard({
         </div>
       )}
 
-      {/* Logo mark */}
-      <PrymaLogo size={32} />
+      {/* Logo + avatar — tighter top stack */}
+      <div className="flex flex-col items-center gap-3">
+        <PrymaLogo size={32} />
 
-      {/* Context mode selector — owners only */}
-      {isOwner && (
-        <SegmentedControl value={mode} onChange={handleModeChange} />
-      )}
-
-      {/* Avatar */}
-      <div className="w-20 h-20 rounded-full overflow-hidden border border-border/30 flex-shrink-0">
-        {ctx.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={ctx.avatarUrl}
-            alt={ctx.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted text-2xl font-light select-none">
-            {ctx.name.charAt(0).toUpperCase()}
-          </div>
+        {/* Context mode selector — owners only */}
+        {isOwner && (
+          <SegmentedControl value={mode} onChange={handleModeChange} />
         )}
+
+        <div className="w-20 h-20 rounded-full overflow-hidden ring-1 ring-white/[0.06] flex-shrink-0">
+          {ctx.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={ctx.avatarUrl}
+              alt={ctx.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted text-2xl font-light select-none">
+              {ctx.name.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Identity */}
@@ -165,7 +166,7 @@ export function ProfileCard({
               {line}
             </p>
           ))}
-          <p className="font-light text-[10px] tracking-wide text-muted/60 uppercase mt-1">
+          <p className="font-light text-[10px] tracking-wide text-muted/50 uppercase mt-1">
             Shared intentionally via Pryma
           </p>
         </div>
@@ -213,12 +214,21 @@ export function ProfileCard({
         website={normalizedWebsite}
       />
 
+      {/* Primary CTA for recipients — shown above the divider, owners use the section below */}
+      {!isOwner && (
+        <SaveContactButton
+          handle={profile.handle}
+          fields={ctx}
+          profileUrl={shareUrl}
+        />
+      )}
+
       {/* Divider + Actions + QR — hidden while Share Mode is open to prevent duplicate QR */}
       {!shareModeOpen && (
         <>
           <div className="w-full border-t border-border opacity-20" />
 
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-4 mt-2">
             <div className="flex flex-col items-center gap-3">
               <div className="bg-[#111111] rounded-xl p-4">
                 <ProfileQR url={shareUrl} />
@@ -227,12 +237,16 @@ export function ProfileCard({
                 Scan to view
               </p>
             </div>
-            <ShareButton url={shareUrl} onOpen={() => setShareModeOpen(true)} />
-            <SaveContactButton
-              handle={profile.handle}
-              fields={ctx}
-              profileUrl={shareUrl}
-            />
+            {isOwner && (
+              <>
+                <ShareButton url={shareUrl} onOpen={() => setShareModeOpen(true)} />
+                <SaveContactButton
+                  handle={profile.handle}
+                  fields={ctx}
+                  profileUrl={shareUrl}
+                />
+              </>
+            )}
           </div>
         </>
       )}
