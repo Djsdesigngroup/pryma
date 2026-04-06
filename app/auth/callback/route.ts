@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
@@ -20,7 +20,38 @@ export async function GET(request: NextRequest) {
     origin,
   });
 
-  const supabase = createClient();
+  // Capture cookies that Supabase writes during token exchange.
+  // We apply them explicitly to the redirect response rather than relying
+  // on cookies() from next/headers being merged into NextResponse.redirect(),
+  // which is not reliable in Next.js 14 and causes sessions to not persist.
+  let pendingCookies: Parameters<typeof NextResponse.prototype.cookies.set>[] = [];
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          pendingCookies = cookiesToSet.map(({ name, value, options }) => [
+            name,
+            value,
+            options,
+          ]);
+        },
+      },
+    }
+  );
+
+  // Stamp all captured session cookies onto a redirect response.
+  function redirect(destination: string): NextResponse {
+    const response = NextResponse.redirect(destination);
+    pendingCookies.forEach((args) => response.cookies.set(...args));
+    return response;
+  }
+
   let sessionError = false;
 
   if (token_hash && type) {
@@ -48,7 +79,7 @@ export async function GET(request: NextRequest) {
     // Password recovery — session is established; send user to set their password.
     if (type === "recovery") {
       console.log("[callback] recovery token verified → /auth/update-password");
-      return NextResponse.redirect(`${origin}/auth/update-password`);
+      return redirect(`${origin}/auth/update-password`);
     }
 
     const {
@@ -68,7 +99,7 @@ export async function GET(request: NextRequest) {
 
       const redirectTo = profile ? "/edit" : "/onboarding";
       console.log("[callback] user", user.id, "→ profile:", profile?.handle ?? "none", "→ redirect:", redirectTo);
-      return NextResponse.redirect(`${origin}${redirectTo}`);
+      return redirect(`${origin}${redirectTo}`);
     } else {
       console.error("[callback] session established but getUser() returned null");
     }

@@ -44,7 +44,15 @@ export async function middleware(request: NextRequest) {
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth";
-    return NextResponse.redirect(url);
+    const redirectResponse = NextResponse.redirect(url);
+    // Carry any cookies Supabase wrote during getUser() (e.g. clearing an
+    // invalid token) so the browser receives those mutations even on redirect.
+    supabaseResponse.cookies
+      .getAll()
+      .forEach((cookie) =>
+        redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+      );
+    return redirectResponse;
   }
 
   return supabaseResponse;

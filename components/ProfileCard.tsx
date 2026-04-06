@@ -41,9 +41,7 @@ export function ProfileCard({
 
   // Owners load their last-used context from localStorage
   useEffect(() => {
-    if (isOwner) {
-      setMode(loadContextMode());
-    }
+    if (isOwner) setMode(loadContextMode());
   }, [isOwner]);
 
   // Close owner menu on outside click
@@ -61,6 +59,15 @@ export function ProfileCard({
   function handleModeChange(next: ContextMode) {
     setMode(next);
     saveContextMode(next);
+  }
+
+  // Hoisted so ShareButton and ShareMode receive stable-named references
+  function handleOpenShareMode() {
+    setShareModeOpen(true);
+  }
+
+  function handleCloseShareMode() {
+    setShareModeOpen(false);
   }
 
   async function handleOwnerSignOut() {
@@ -84,12 +91,22 @@ export function ProfileCard({
 
   const bioLines = ctx.bio?.split("\n\n").filter(Boolean) ?? [];
 
+  // Extracted to avoid duplicating identical props across recipient and owner sites
+  const saveContactButton = (
+    <SaveContactButton
+      handle={profile.handle}
+      fields={ctx}
+      profileUrl={shareUrl}
+    />
+  );
+
   return (
-    <div className="relative flex flex-col items-center gap-5 w-full max-w-profile mx-auto px-6 py-4">
+    // Spacing system: 4=micro 8=tight 12=grouped 16=standard 24=section 32=page
+    <div className="relative flex flex-col items-center w-full max-w-profile mx-auto px-6 pt-8 pb-6">
 
       {/* Owner actions menu — quiet ··· in top-right, only for the owner */}
       {isOwner && (
-        <div ref={menuRef} className="absolute top-4 right-0 z-10">
+        <div ref={menuRef} className="absolute top-6 right-0 z-10">
           <button
             onClick={() => setMenuOpen((o) => !o)}
             aria-label="Profile actions"
@@ -117,7 +134,8 @@ export function ProfileCard({
         </div>
       )}
 
-      {/* Logo + avatar — tighter top stack */}
+      {/* ── Header block: logo → [toggle] → avatar → name → role ──
+          gap-3 (12px) throughout — tight grouping, single visual unit */}
       <div className="flex flex-col items-center gap-3">
         <PrymaLogo size={32} />
 
@@ -140,40 +158,41 @@ export function ProfileCard({
             </div>
           )}
         </div>
+
+        {/* Name + role sit inside the header group — 12px from avatar via gap-3 */}
+        <div className="flex flex-col items-center gap-1 text-center">
+          <h1 className="font-medium text-[26px] tracking-[-0.02em] text-primary">
+            {ctx.name}
+          </h1>
+          <p className="font-light text-sm text-secondary">
+            {ctx.role}
+            {ctx.organization && (
+              <>
+                {" "}
+                <span className="text-muted">·</span> {ctx.organization}
+              </>
+            )}
+          </p>
+        </div>
       </div>
 
-      {/* Identity */}
-      <div className="flex flex-col items-center gap-1 text-center">
-        <h1 className="font-medium text-[26px] tracking-[-0.02em] text-primary">
-          {ctx.name}
-        </h1>
-        <p className="font-light text-sm text-secondary">
-          {ctx.role}
-          {ctx.organization && (
-            <>
-              {" "}
-              <span className="text-muted">·</span> {ctx.organization}
-            </>
-          )}
-        </p>
-      </div>
-
-      {/* Bio */}
+      {/* ── Bio — mt-6 (24px) below header ── */}
       {bioLines.length > 0 && (
-        <div className="flex flex-col gap-2.5 text-center -mt-1">
+        <div className="flex flex-col gap-3 text-center mt-6">
           {bioLines.map((line, i) => (
             <p key={i} className="font-light text-sm leading-[1.55] text-secondary">
               {line}
             </p>
           ))}
-          <p className="font-light text-[10px] tracking-wide text-muted/50 uppercase mt-1">
+          <p className="font-light text-[10px] tracking-wide text-muted/50 uppercase">
             Shared intentionally via Pryma
           </p>
         </div>
       )}
 
-      {/* Website + Location */}
-      <div className="flex flex-col items-center gap-2">
+      {/* ── Metadata: website + location + contact icons ──
+          mt-4 (16px) below bio — gap-2 (8px) within, same information tier */}
+      <div className="flex flex-col items-center gap-2 mt-4">
         {normalizedWebsite && (
           <a
             href={normalizedWebsite}
@@ -205,31 +224,23 @@ export function ProfileCard({
             {ctx.location}
           </span>
         )}
+        <ContactRow phone={ctx.phone} email={ctx.email} website={normalizedWebsite} />
       </div>
 
-      {/* Contact row — icon-only strip, renders only if at least one item exists */}
-      <ContactRow
-        phone={ctx.phone}
-        email={ctx.email}
-        website={normalizedWebsite}
-      />
+      {/* ── Recipient primary CTA — mt-6 (24px) below metadata ──
+          Owners get their SaveContactButton in the action block below */}
+      {!isOwner && <div className="mt-6">{saveContactButton}</div>}
 
-      {/* Primary CTA for recipients — shown above the divider, owners use the section below */}
-      {!isOwner && (
-        <SaveContactButton
-          handle={profile.handle}
-          fields={ctx}
-          profileUrl={shareUrl}
-        />
-      )}
-
-      {/* Divider + Actions + QR — hidden while Share Mode is open to prevent duplicate QR */}
+      {/* ── Divider + QR + owner actions — mt-6 (24px) below last content ──
+          Hidden while ShareMode is open to prevent a duplicate QR on screen */}
       {!shareModeOpen && (
-        <>
+        <div className="w-full mt-6">
           <div className="w-full border-t border-border opacity-20" />
 
-          <div className="flex flex-col items-center gap-4 mt-2">
-            <div className="flex flex-col items-center gap-3">
+          {/* gap-4 (16px): QR group → owner buttons */}
+          <div className="flex flex-col items-center gap-4 mt-6">
+            {/* gap-2 (8px): QR image → label — tight single unit */}
+            <div className="flex flex-col items-center gap-2">
               <div className="bg-[#111111] rounded-xl p-4">
                 <ProfileQR url={shareUrl} />
               </div>
@@ -237,18 +248,16 @@ export function ProfileCard({
                 Scan to view
               </p>
             </div>
+
+            {/* Owner-only actions — gap-3 (12px) between buttons */}
             {isOwner && (
-              <>
-                <ShareButton url={shareUrl} onOpen={() => setShareModeOpen(true)} />
-                <SaveContactButton
-                  handle={profile.handle}
-                  fields={ctx}
-                  profileUrl={shareUrl}
-                />
-              </>
+              <div className="flex flex-col items-center gap-3 w-full">
+                <ShareButton url={shareUrl} onOpen={handleOpenShareMode} />
+                {saveContactButton}
+              </div>
             )}
           </div>
-        </>
+        </div>
       )}
 
       {/* Share Mode — full-screen overlay triggered by Send Pryma */}
@@ -258,7 +267,7 @@ export function ProfileCard({
           mode={mode}
           handle={profile.handle}
           ctx={ctx}
-          onClose={() => setShareModeOpen(false)}
+          onClose={handleCloseShareMode}
         />
       )}
     </div>
