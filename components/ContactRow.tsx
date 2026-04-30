@@ -29,8 +29,8 @@ export function ContactRow({ phone, email, website }: ContactRowProps) {
             external: false,
             icon: (
               <svg
-                width="15"
-                height="15"
+                width="17"
+                height="17"
                 viewBox="0 0 15 15"
                 fill="none"
                 stroke="currentColor"
@@ -54,8 +54,8 @@ export function ContactRow({ phone, email, website }: ContactRowProps) {
             external: false,
             icon: (
               <svg
-                width="15"
-                height="15"
+                width="17"
+                height="17"
                 viewBox="0 0 15 15"
                 fill="none"
                 stroke="currentColor"
@@ -80,8 +80,8 @@ export function ContactRow({ phone, email, website }: ContactRowProps) {
             external: true,
             icon: (
               <svg
-                width="15"
-                height="15"
+                width="17"
+                height="17"
                 viewBox="0 0 15 15"
                 fill="none"
                 stroke="currentColor"
@@ -103,7 +103,7 @@ export function ContactRow({ phone, email, website }: ContactRowProps) {
   if (items.length === 0) return null;
 
   return (
-    <div className="flex items-center justify-center gap-6">
+    <div className="flex items-center justify-center gap-8">
       {items.map((item) => (
         <a
           key={item.key}

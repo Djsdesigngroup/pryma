@@ -110,7 +110,7 @@ export function ProfileCard({
           <button
             onClick={() => setMenuOpen((o) => !o)}
             aria-label="Profile actions"
-            className="p-2 text-muted/60 hover:text-secondary transition-colors duration-200 ease-out leading-none tracking-[0.15em] select-none"
+            className="w-11 h-11 flex items-center justify-center text-base text-muted/60 hover:text-secondary hover:bg-white/5 rounded-lg transition-colors duration-200 ease-out leading-none tracking-[0.2em] select-none"
           >
             ···
           </button>
@@ -135,16 +135,21 @@ export function ProfileCard({
       )}
 
       {/* ── Header block: logo → [toggle] → avatar → name → role ──
-          gap-3 (12px) throughout — tight grouping, single visual unit */}
-      <div className="flex flex-col items-center gap-3">
-        <PrymaLogo size={32} />
+          Individual margins for precise spacing at each step */}
+      <div className="flex flex-col items-center">
+        <PrymaLogo size={35} />
 
-        {/* Context mode selector — owners only */}
+        {/* Context mode selector — owners only; mt-5 (20px) below logo */}
         {isOwner && (
-          <SegmentedControl value={mode} onChange={handleModeChange} />
+          <div className="mt-5">
+            <SegmentedControl value={mode} onChange={handleModeChange} />
+          </div>
         )}
 
-        <div className="w-20 h-20 rounded-full overflow-hidden ring-1 ring-white/[0.06] flex-shrink-0">
+        {/* mt-7 (28px) below toggle for owners; mt-6 (24px) below logo for recipients */}
+        <div
+          className={`w-20 h-20 rounded-full overflow-hidden ring-1 ring-white/[0.06] flex-shrink-0 ${isOwner ? "mt-7" : "mt-6"}`}
+        >
           {ctx.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -159,9 +164,9 @@ export function ProfileCard({
           )}
         </div>
 
-        {/* Name + role sit inside the header group — 12px from avatar via gap-3 */}
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="font-medium text-[26px] tracking-[-0.02em] text-primary">
+        {/* Name + role — mt-[18px] below avatar */}
+        <div className="flex flex-col items-center gap-1 text-center mt-[18px]">
+          <h1 className="font-medium text-[25px] tracking-[-0.01em] text-primary">
             {ctx.name}
           </h1>
           <p className="font-light text-sm text-secondary">
@@ -178,13 +183,13 @@ export function ProfileCard({
 
       {/* ── Bio — mt-6 (24px) below header ── */}
       {bioLines.length > 0 && (
-        <div className="flex flex-col gap-3 text-center mt-6">
+        <div className="flex flex-col gap-3 text-center mt-6 max-w-[360px] mx-auto">
           {bioLines.map((line, i) => (
-            <p key={i} className="font-light text-sm leading-[1.55] text-secondary">
+            <p key={i} className="font-light text-sm leading-[1.65] text-secondary">
               {line}
             </p>
           ))}
-          <p className="font-light text-[10px] tracking-wide text-muted/50 uppercase">
+          <p className="font-light text-[10px] tracking-wide text-muted/60 uppercase mt-2">
             Shared intentionally via Pryma
           </p>
         </div>
@@ -235,23 +240,23 @@ export function ProfileCard({
           Hidden while ShareMode is open to prevent a duplicate QR on screen */}
       {!shareModeOpen && (
         <div className="w-full mt-6">
-          <div className="w-full border-t border-border opacity-20" />
+          <div className="w-full border-t border-border opacity-10" />
 
-          {/* gap-4 (16px): QR group → owner buttons */}
-          <div className="flex flex-col items-center gap-4 mt-6">
+          {/* gap-7 (28px): QR group → owner buttons */}
+          <div className="flex flex-col items-center gap-7 mt-8">
             {/* gap-2 (8px): QR image → label — tight single unit */}
             <div className="flex flex-col items-center gap-2">
               <div className="bg-[#111111] rounded-xl p-4">
-                <ProfileQR url={shareUrl} />
+                <ProfileQR url={shareUrl} size={122} />
               </div>
               <p className="font-light text-xs text-muted tracking-wide uppercase">
                 Scan to view
               </p>
             </div>
 
-            {/* Owner-only actions — gap-3 (12px) between buttons */}
+            {/* Owner-only actions — gap-6 (24px): covers ShareButton microcopy → SaveContact */}
             {isOwner && (
-              <div className="flex flex-col items-center gap-3 w-full">
+              <div className="flex flex-col items-center gap-6 w-full">
                 <ShareButton url={shareUrl} onOpen={handleOpenShareMode} />
                 {saveContactButton}
               </div>
