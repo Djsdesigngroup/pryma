@@ -95,7 +95,7 @@ export function ContactRow({ phone, email, website }: ContactRowProps) {
           target={item.external ? "_blank" : undefined}
           rel={item.external ? "noopener noreferrer" : undefined}
           aria-label={item.label}
-          className="w-7 h-7 flex items-center justify-center text-secondary opacity-70 translate-y-px hover:opacity-[0.95] hover:-translate-y-px active:scale-[0.96] transition-[opacity,transform] duration-[120ms] ease-out"
+          className="w-7 h-7 flex items-center justify-center text-secondary opacity-70 hover:opacity-[0.95] hover:-translate-y-px active:scale-[0.96] transition-[opacity,transform] duration-[120ms] ease-out"
         >
           {item.icon}
         </a>

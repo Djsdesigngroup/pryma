@@ -158,8 +158,8 @@ export function ProfileCard({
       {/* ── Static header: logo → [toggle] → avatar ──
           These elements do not participate in the mode content transition */}
 
-      {/* Logo — entrance: delay 0ms */}
-      <div className="animate-fade-up" style={{ animationDelay: "0ms" }}>
+      {/* Logo — entrance: delay 0ms. mb-0.5 adds 2px below for breathing room. */}
+      <div className="animate-fade-up mb-0.5" style={{ animationDelay: "0ms" }}>
         <PrymaLogo size={35} />
       </div>
 
@@ -223,17 +223,15 @@ export function ProfileCard({
           </p>
         </div>
 
-        {/* Bio — entrance: delay 180ms */}
+        {/* Bio — entrance: delay 180ms. Single block, hard-clamped to 2 lines. */}
         {bioLines.length > 0 && (
           <div
             className="flex flex-col gap-3 text-center mt-6 max-w-[360px] mx-auto animate-fade-up"
             style={{ animationDelay: "180ms" }}
           >
-            {bioLines.map((line, i) => (
-              <p key={i} className="font-light text-sm leading-[1.65] text-secondary">
-                {line}
-              </p>
-            ))}
+            <p className="font-light text-sm leading-[1.65] text-secondary line-clamp-2">
+              {bioLines.join(" ")}
+            </p>
             {/* Microcopy — extra delay so it arrives after the main bio */}
             <p
               className="font-light text-[10px] tracking-wide text-muted/60 uppercase mt-2 animate-fade-up"
@@ -283,44 +281,37 @@ export function ProfileCard({
           <ContactRow phone={ctx.phone} email={ctx.email} website={normalizedWebsite} />
         </div>
 
-        {/* Recipient primary CTA — entrance: delay 280ms */}
-        {!isOwner && (
-          <div
-            className="mt-6 animate-fade-up"
-            style={{ animationDelay: "280ms" }}
-          >
-            {saveContactButton}
-          </div>
-        )}
-
-        {/* Divider + QR + owner actions — entrance: delay 300ms */}
+        {/* Divider + QR + actions — entrance: delay 280ms */}
         {!shareModeOpen && (
           <div
             className="w-full mt-6 animate-fade-up"
-            style={{ animationDelay: "300ms" }}
+            style={{ animationDelay: "280ms" }}
           >
             <div className="w-full border-t border-border opacity-10" />
 
-            <div className="flex flex-col items-center gap-7 mt-8">
-              {/* QR — subtle hover scale */}
+            <div className="flex flex-col items-center gap-9 mt-8">
+              {/* QR — subtle hover/brightness interaction */}
               <div className="flex flex-col items-center gap-2">
                 <div
                   className="bg-[#111111] rounded-xl p-4 transition-[opacity,transform,filter] duration-[160ms] ease-out opacity-90 hover:opacity-100 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
                 >
                   <ProfileQR url={shareUrl} size={122} />
                 </div>
-                <p className="font-light text-xs text-muted/40 tracking-wide uppercase">
-                  Scan to view
+                <p className="font-light text-xs text-muted/40 tracking-[0.04em] uppercase">
+                  Scan to open Pryma
                 </p>
               </div>
 
-              {/* Owner-only actions */}
-              {isOwner && (
-                <div className="flex flex-col items-center gap-6 w-full">
-                  <ShareButton url={shareUrl} onOpen={handleOpenShareMode} />
-                  {saveContactButton}
-                </div>
-              )}
+              {/* Actions:
+                  Owner  → Send Pryma only (opens ShareMode)
+                  Viewer → Send Pryma (native share/clipboard) + Add to contacts */}
+              <div className="flex flex-col items-center gap-6 w-full">
+                <ShareButton
+                  url={shareUrl}
+                  onOpen={isOwner ? handleOpenShareMode : undefined}
+                />
+                {!isOwner && saveContactButton}
+              </div>
             </div>
           </div>
         )}
