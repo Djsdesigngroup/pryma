@@ -278,7 +278,9 @@ export function ProfileCard({
               {ctx.location}
             </span>
           )}
-          <ContactRow phone={ctx.phone} email={ctx.email} website={normalizedWebsite} />
+          <div className="-mt-1">
+            <ContactRow phone={ctx.phone} email={ctx.email} website={normalizedWebsite} />
+          </div>
         </div>
 
         {/* Divider + QR + actions — entrance: delay 280ms */}
@@ -295,7 +297,7 @@ export function ProfileCard({
                 <div
                   className="bg-[#111111] rounded-xl p-4 transition-[opacity,transform,filter] duration-[160ms] ease-out opacity-90 hover:opacity-100 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
                 >
-                  <ProfileQR url={shareUrl} size={122} />
+                  <ProfileQR url={shareUrl} size={118} />
                 </div>
                 <p className="font-light text-xs text-muted/40 tracking-[0.04em] uppercase">
                   Scan to open Pryma

@@ -67,8 +67,8 @@ export function HandleInput({
 
   const hint: Record<CheckState, React.ReactNode> = {
     idle: null,
-    checking: <span className="text-muted">Checking…</span>,
-    available: <span className="text-[#4ade80]/60">Available</span>,
+    checking: <span className="text-muted/60">Checking…</span>,
+    available: <span className="text-[#4ade80]/50">Available</span>,
     taken: <span className="text-[#f87171]/60">Handle taken</span>,
     invalid: (
       <span className="text-[#f87171]/60">
@@ -78,15 +78,15 @@ export function HandleInput({
   };
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       <label
         htmlFor="handle"
-        className="font-light text-xs text-muted tracking-wide uppercase"
+        className="font-light text-[10px] text-primary/[0.38] tracking-[0.12em] uppercase"
       >
-        Handle <span className="text-muted ml-1">*</span>
+        Handle <span className="text-primary/[0.25] ml-1">*</span>
       </label>
       <div className="relative">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-light text-muted select-none">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-light text-muted/60 select-none">
           @
         </span>
         <input
@@ -98,7 +98,7 @@ export function HandleInput({
           }
           placeholder="yourhandle"
           autoComplete="off"
-          className="w-full bg-surface border border-border rounded-xl pl-8 pr-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
+          className="w-full bg-white/[0.04] border border-white/[0.10] rounded-xl pl-8 pr-4 py-3 text-sm font-light text-primary placeholder:text-muted/50 outline-none focus:border-white/[0.30] transition-colors duration-[120ms] ease-out"
         />
       </div>
       {hint[state] && (

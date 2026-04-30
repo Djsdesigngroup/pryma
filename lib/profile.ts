@@ -17,7 +17,7 @@ export const DEFAULT_PROFILE: PrymaProfile = {
   publicOrganization: "Pryma",
   professionalOrganization: "Pryma",
   publicBio:
-    "Building infrastructure for a more transparent, human internet.\n\nFocused on identity, trust, and how we interact online.",
+    "Building Pryma — a modern identity layer for sharing the right information in the right context.",
   publicLocation: "Pennsylvania, US",
   professionalBio:
     "Founder of Pryma. Working on identity infrastructure, context-based contact sharing, and products that reduce friction in real-world interaction.",

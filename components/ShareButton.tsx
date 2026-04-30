@@ -37,7 +37,7 @@ export function ShareButton({ url, onOpen }: ShareButtonProps) {
       {/* Primary action */}
       <button
         onClick={handleShare}
-        className="w-[280px] border border-primary/25 text-secondary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-[120ms] ease-out hover:border-primary/50 hover:text-primary hover:bg-white/[0.05] active:scale-[0.98] active:brightness-90"
+        className="w-[280px] border border-primary/35 text-secondary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-[120ms] ease-out hover:border-primary/55 hover:text-primary hover:bg-white/[0.05] active:scale-[0.98] active:brightness-90"
       >
         {shared ? "Ready to share" : "Send Pryma"}
       </button>

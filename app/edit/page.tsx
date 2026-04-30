@@ -42,34 +42,32 @@ interface EditForm {
 
 const EMPTY: EditForm = {
   handle: "",
-
   public_full_name: "",
   professional_full_name: "",
-
   public_role_title: "",
   professional_role_title: "",
-
   public_organization: "",
   professional_organization: "",
-
   public_avatar_url: "",
   professional_avatar_url: "",
-
   public_phone: "",
   professional_phone: "",
-
   public_email: "",
   professional_email: "",
-
   public_bio: "",
   professional_bio: "",
-
   public_website: "",
   professional_website: "",
-
   public_location: "",
   professional_location: "",
 };
+
+// Shared token for field styling — keeps all inputs consistent
+const inputClass =
+  "w-full bg-white/[0.04] border border-white/[0.10] rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted/50 outline-none focus:border-white/[0.30] transition-colors duration-[120ms] ease-out";
+
+const labelClass =
+  "font-light text-[10px] text-primary/[0.38] tracking-[0.12em] uppercase";
 
 export default function EditPage() {
   const router = useRouter();
@@ -116,31 +114,22 @@ export default function EditPage() {
       setHandleValid(true);
       setForm({
         handle: profile.handle,
-
         public_full_name: profile.public_full_name ?? "",
         professional_full_name: profile.professional_full_name ?? "",
-
         public_role_title: profile.public_role_title ?? "",
         professional_role_title: profile.professional_role_title ?? "",
-
         public_organization: profile.public_organization ?? "",
         professional_organization: profile.professional_organization ?? "",
-
         public_avatar_url: profile.public_avatar_url ?? "",
         professional_avatar_url: profile.professional_avatar_url ?? "",
-
         public_phone: profile.public_phone ?? "",
         professional_phone: profile.professional_phone ?? "",
-
         public_email: profile.public_email ?? "",
         professional_email: profile.professional_email ?? "",
-
         public_bio: profile.public_bio ?? "",
         professional_bio: profile.professional_bio ?? "",
-
         public_website: profile.public_website ?? "",
         professional_website: profile.professional_website ?? "",
-
         public_location: profile.public_location ?? "",
         professional_location: profile.professional_location ?? "",
       });
@@ -238,34 +227,24 @@ export default function EditPage() {
       .from("profiles")
       .update({
         handle: form.handle,
-
         public_full_name: form.public_full_name || null,
         professional_full_name: form.professional_full_name || null,
-
         public_role_title: form.public_role_title || null,
         professional_role_title: form.professional_role_title || null,
-
         public_organization: form.public_organization || null,
         professional_organization: form.professional_organization || null,
-
         public_avatar_url: form.public_avatar_url || null,
         professional_avatar_url: form.professional_avatar_url || null,
-
         public_phone: form.public_phone || null,
         professional_phone: form.professional_phone || null,
-
         public_email: form.public_email || null,
         professional_email: form.professional_email || null,
-
         public_bio: form.public_bio || null,
         professional_bio: form.professional_bio || null,
-
         public_website: normalizedPublicWebsite || null,
         professional_website: normalizedProfessionalWebsite || null,
-
         public_location: form.public_location || null,
         professional_location: form.professional_location || null,
-
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", userId);
@@ -296,7 +275,7 @@ export default function EditPage() {
   if (!userId) {
     return (
       <main className="min-h-screen flex items-center justify-center">
-        <span className="text-muted text-sm font-light">Loading…</span>
+        <span className="text-muted/60 text-sm font-light">Loading…</span>
       </main>
     );
   }
@@ -304,14 +283,18 @@ export default function EditPage() {
   return (
     <main className="min-h-screen flex flex-col items-center py-12 px-6">
       <div className="w-full max-w-profile flex flex-col gap-8">
-        <div className="flex flex-col items-center gap-4">
-          <PrymaLogo size={24} />
-          <p className="font-light text-sm text-muted tracking-wide uppercase">
+
+        {/* ── Page header ── */}
+        <div className="flex flex-col items-center gap-5">
+          <PrymaLogo size={35} />
+          <p className={`${labelClass} text-primary/[0.55]`}>
             Edit profile
           </p>
         </div>
 
         <div className="flex flex-col gap-8">
+
+          {/* Handle */}
           <HandleInput
             value={form.handle}
             onChange={(v) => set("handle", v)}
@@ -319,24 +302,24 @@ export default function EditPage() {
             onValidChange={setHandleValid}
           />
 
+          {/* Context toggle */}
           <div className="flex flex-col items-center gap-2">
             <SegmentedControl value={activeContext} onChange={setActiveContext} />
-            <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
+            <p className="font-light text-[10px] text-primary/[0.55] tracking-[0.12em] uppercase">
               Editing: {activeContext}
             </p>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase">
-              Profile photo
-            </p>
+          {/* Profile photo */}
+          <div className="flex flex-col gap-2">
+            <p className={labelClass}>Profile photo</p>
 
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-3 pt-1">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={avatarLoading}
-                className="w-20 h-20 rounded-full overflow-hidden border border-border/30 flex items-center justify-center transition-all duration-200 ease-out hover:border-primary/30 group"
+                className="w-20 h-20 rounded-full overflow-hidden ring-1 ring-white/[0.08] flex items-center justify-center transition-[box-shadow] duration-[120ms] ease-out hover:ring-white/[0.20] group"
                 aria-label="Change profile photo"
               >
                 {activeAvatar ? (
@@ -347,7 +330,7 @@ export default function EditPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-muted text-2xl font-light group-hover:text-secondary transition-colors duration-200 select-none">
+                  <span className="text-muted/60 text-2xl font-light group-hover:text-secondary transition-colors duration-[120ms] select-none">
                     {activeName?.charAt(0)?.toUpperCase() || "+"}
                   </span>
                 )}
@@ -357,7 +340,7 @@ export default function EditPage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={avatarLoading}
-                className="font-light text-[11px] text-muted hover:text-secondary transition-colors duration-200 ease-out tracking-wide uppercase disabled:opacity-50"
+                className="font-light text-[10px] text-primary/[0.55] hover:text-primary/[0.85] transition-colors duration-[120ms] ease-out tracking-[0.10em] uppercase disabled:opacity-40"
               >
                 {avatarLoading ? "Uploading…" : activeAvatar ? "Change photo" : "Add photo"}
               </button>
@@ -372,6 +355,7 @@ export default function EditPage() {
             </div>
           </div>
 
+          {/* Fields */}
           <div className="flex flex-col gap-5">
             <EditableField
               label="Full name"
@@ -411,16 +395,15 @@ export default function EditPage() {
               type="email"
             />
 
-            <div className="flex flex-col gap-1.5">
-              <label className="font-light text-xs text-muted tracking-wide uppercase">
-                Bio
-              </label>
+            {/* Bio */}
+            <div className="flex flex-col gap-2">
+              <label className={labelClass}>Bio</label>
               <textarea
                 value={activeBio}
                 onChange={(e) => set(bioKey, e.target.value)}
-                rows={4}
+                rows={3}
                 placeholder="Bio…"
-                className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out resize-none leading-relaxed"
+                className={`${inputClass} resize-none leading-relaxed`}
               />
             </div>
 
@@ -440,15 +423,16 @@ export default function EditPage() {
             />
           </div>
 
-          <div className="border-t border-border opacity-20" />
+          {/* Divider */}
+          <div className="border-t border-border opacity-10" />
 
-          <div className="flex flex-col gap-2">
-            <p className="font-light text-[10px] text-muted/50 tracking-widest uppercase text-center">
-              Preview
-            </p>
+          {/* Preview */}
+          <div className="flex flex-col gap-3">
+            <p className={`${labelClass} text-center`}>Preview</p>
 
-            <div className="w-full rounded-[28px] border border-border/40 bg-surface/60 px-5 py-6 flex flex-col items-center text-center gap-4 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-              <div className="w-20 h-20 rounded-full overflow-hidden border border-border/30 flex items-center justify-center">
+            <div className="w-full rounded-2xl border border-white/[0.22] bg-surface/60 px-5 py-6 flex flex-col items-center text-center gap-4">
+              {/* Avatar */}
+              <div className="w-16 h-16 rounded-full overflow-hidden ring-1 ring-white/[0.08] flex items-center justify-center flex-shrink-0">
                 {activeAvatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -457,15 +441,16 @@ export default function EditPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-muted text-2xl font-light select-none">
+                  <span className="text-muted/60 text-xl font-light select-none">
                     {activeName?.charAt(0)?.toUpperCase() || "+"}
                   </span>
                 )}
               </div>
 
+              {/* Name + role */}
               <div className="flex flex-col items-center gap-1">
                 <p className="text-[18px] font-medium tracking-[-0.01em] text-primary">
-                  {activeName || "Your name"}
+                  {activeName || <span className="text-muted/40">Your name</span>}
                 </p>
 
                 {(activeRole || activeOrganization) && (
@@ -475,9 +460,10 @@ export default function EditPage() {
                 )}
               </div>
 
-              <div className="w-full max-w-[320px] flex flex-col items-center gap-2">
+              {/* Bio + metadata */}
+              <div className="w-full max-w-[300px] flex flex-col items-center gap-2">
                 {activeBio ? (
-                  <p className="text-sm font-light text-muted/80 leading-[1.6] whitespace-pre-wrap">
+                  <p className="text-sm font-light text-secondary/70 leading-[1.65] line-clamp-3">
                     {activeBio}
                   </p>
                 ) : (
@@ -487,13 +473,13 @@ export default function EditPage() {
                 )}
 
                 {activeWebsite && (
-                  <p className="text-xs font-light text-secondary break-all">
-                    {activeWebsite}
+                  <p className="text-xs font-light text-secondary/60 break-all">
+                    {activeWebsite.replace(/^https?:\/\//, "")}
                   </p>
                 )}
 
                 {activeLocation && (
-                  <p className="text-xs font-light text-muted/70">
+                  <p className="text-xs font-light text-muted/60">
                     {activeLocation}
                   </p>
                 )}
@@ -502,36 +488,42 @@ export default function EditPage() {
           </div>
         </div>
 
-        <div className="border-t border-border opacity-20" />
+        {/* Divider */}
+        <div className="border-t border-border opacity-10" />
 
+        {/* Error */}
         {error && (
           <p className="text-[11px] text-[#f87171]/70 font-light text-center -mt-4">
             {error}
           </p>
         )}
 
+        {/* Actions */}
         <div className="flex flex-col items-center gap-3 pt-2">
+          {/* Primary — Save */}
           <button
             type="button"
             onClick={handleSave}
             disabled={saving || !handleValid}
-            className="w-[280px] border border-primary/20 text-primary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-200 ease-out hover:border-primary/50 hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="w-[280px] border border-primary/35 text-secondary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-[120ms] ease-out hover:border-primary/55 hover:text-primary hover:bg-white/[0.05] active:scale-[0.98] active:brightness-90 disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            {saving ? "Saving…" : saved ? "Saved ✓" : "Save changes"}
+            {saving ? "Saving…" : saved ? "Saved" : "Save changes"}
           </button>
 
+          {/* Secondary — View profile */}
           <button
             type="button"
             onClick={() => window.open(`/u/${form.handle}`, "_blank")}
-            className="w-[280px] text-secondary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-200 ease-out hover:text-primary"
+            className="w-[280px] border border-primary/15 text-secondary/70 font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-[120ms] ease-out hover:border-primary/30 hover:text-secondary hover:bg-white/[0.05] active:scale-[0.98] active:brightness-90"
           >
             View profile →
           </button>
 
+          {/* Tertiary — Sign out */}
           <button
             type="button"
             onClick={handleSignOut}
-            className="font-light text-xs text-muted hover:text-secondary transition-colors duration-200 ease-out tracking-wide uppercase mt-4"
+            className="font-light text-[10px] text-muted/50 hover:text-secondary/60 transition-colors duration-[120ms] ease-out tracking-[0.10em] uppercase mt-4"
           >
             Sign out
           </button>
@@ -540,6 +532,8 @@ export default function EditPage() {
     </main>
   );
 }
+
+// ── EditableField ────────────────────────────────────────────────────────────
 
 interface EditableFieldProps {
   label: string;
@@ -559,17 +553,17 @@ function EditableField({
   required = false,
 }: EditableFieldProps) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="font-light text-xs text-muted tracking-wide uppercase">
+    <div className="flex flex-col gap-2">
+      <label className={labelClass}>
         {label}
-        {required && <span className="ml-1">*</span>}
+        {required && <span className="ml-1 text-primary/[0.25]">*</span>}
       </label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-light text-primary placeholder:text-muted outline-none focus:border-primary/30 transition-colors duration-200 ease-out"
+        className={inputClass}
       />
     </div>
   );
