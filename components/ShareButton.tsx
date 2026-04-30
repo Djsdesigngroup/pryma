@@ -29,7 +29,7 @@ export function ShareButton({ url, onOpen }: ShareButtonProps) {
     <div className="flex flex-col items-center gap-[10px]">
       <button
         onClick={handleShare}
-        className="w-[280px] border border-primary/20 text-secondary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-200 ease-out hover:border-primary/40 hover:text-primary"
+        className="w-[280px] border border-primary/20 text-secondary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-200 ease-out hover:border-primary/40 hover:text-primary active:scale-[0.98] active:brightness-90"
       >
         {copied ? "Link copied" : "Send Pryma"}
       </button>

@@ -36,7 +36,7 @@ export function SaveContactButton({
   return (
     <button
       onClick={handleSave}
-      className="w-[280px] border border-primary/20 text-secondary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-200 ease-out hover:border-primary/40 hover:text-primary"
+      className="w-[280px] border border-primary/20 text-secondary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-200 ease-out hover:border-primary/40 hover:text-primary active:scale-[0.98] active:brightness-90"
     >
       {saved ? "Contact ready to add" : "Save contact"}
     </button>

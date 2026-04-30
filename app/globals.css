@@ -29,3 +29,19 @@ body {
   background: var(--color-border);
   color: var(--color-text-primary);
 }
+
+/* Entrance animation — used for staggered page load */
+@keyframes prymaFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: prymaFadeUp 200ms ease-out both;
+}
