@@ -84,7 +84,7 @@ export function ProfileCard({
     transitionRef.current = setTimeout(() => {
       setDisplayedMode(next);
       setContentVisible(true);
-    }, 110);
+    }, 100);
   }
 
   function handleOpenShareMode() {
@@ -197,10 +197,10 @@ export function ProfileCard({
       {/* ── Content wrapper: fades on mode switch, entrance-animates on load ──
           Contains everything that changes with context: name, role, bio, meta, actions */}
       <div
-        className="flex flex-col items-center w-full transition-[opacity,transform] duration-[110ms] ease-out"
+        className="flex flex-col items-center w-full transition-[opacity,transform] duration-[120ms] ease-out"
         style={{
           opacity: contentVisible ? 1 : 0,
-          transform: contentVisible ? "translateY(0)" : "translateY(-5px)",
+          transform: contentVisible ? "translateY(0)" : "translateY(-3px)",
         }}
       >
 
@@ -305,11 +305,11 @@ export function ProfileCard({
               {/* QR — subtle hover scale */}
               <div className="flex flex-col items-center gap-2">
                 <div
-                  className="bg-[#111111] rounded-xl p-4 transition-[opacity,transform] duration-200 ease-out hover:scale-[1.02] hover:opacity-100 opacity-90 active:scale-[0.98]"
+                  className="bg-[#111111] rounded-xl p-4 transition-[opacity,transform,filter] duration-[160ms] ease-out opacity-90 hover:opacity-100 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
                 >
                   <ProfileQR url={shareUrl} size={122} />
                 </div>
-                <p className="font-light text-xs text-muted tracking-wide uppercase">
+                <p className="font-light text-xs text-muted/40 tracking-wide uppercase">
                   Scan to view
                 </p>
               </div>

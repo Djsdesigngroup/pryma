@@ -30,15 +30,16 @@ export function SaveContactButton({
     URL.revokeObjectURL(url);
 
     setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setTimeout(() => setSaved(false), 2200);
   }
 
   return (
+    // Secondary action — lighter border and text weight than Send Pryma
     <button
       onClick={handleSave}
-      className="w-[280px] border border-primary/20 text-secondary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-200 ease-out hover:border-primary/40 hover:text-primary active:scale-[0.98] active:brightness-90"
+      className="w-[280px] border border-primary/15 text-secondary/70 font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-[120ms] ease-out hover:border-primary/30 hover:text-secondary hover:bg-white/[0.05] active:scale-[0.98] active:brightness-90"
     >
-      {saved ? "Contact ready to add" : "Save contact"}
+      {saved ? "Contact ready" : "Add to contacts"}
     </button>
   );
 }

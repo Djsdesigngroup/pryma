@@ -3,6 +3,7 @@
 // ContactRow — minimal icon-only contact strip.
 // Renders nothing if no items are present.
 // Inline SVGs only, no icon library dependency.
+// Icons: 16px inside 28x28 container, strokeWidth 1.75, optical translateY(1px) default.
 
 interface ContactRowProps {
   phone?: string;
@@ -18,6 +19,19 @@ type ContactItem = {
   icon: React.ReactNode;
 };
 
+// Shared icon props — normalized stroke weight and size
+const iconProps = {
+  width: 16,
+  height: 16,
+  viewBox: "0 0 15 15",
+  fill: "none" as const,
+  stroke: "currentColor",
+  strokeWidth: "1.75",
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
+
 export function ContactRow({ phone, email, website }: ContactRowProps) {
   const items: ContactItem[] = [
     ...(phone
@@ -28,17 +42,7 @@ export function ContactRow({ phone, email, website }: ContactRowProps) {
             label: "Call",
             external: false,
             icon: (
-              <svg
-                width="17"
-                height="17"
-                viewBox="0 0 15 15"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.15"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
+              <svg {...iconProps}>
                 <path d="M2.5 3.5a1 1 0 011-1H5l1 2.5-1.5 1.2c.7 1.4 1.8 2.5 3.3 3.3L9 8l2.5 1v1.5a1 1 0 01-1 1C5.5 11.5 2.5 8.5 2.5 5v-1.5z" />
               </svg>
             ),
@@ -53,17 +57,7 @@ export function ContactRow({ phone, email, website }: ContactRowProps) {
             label: "Email",
             external: false,
             icon: (
-              <svg
-                width="17"
-                height="17"
-                viewBox="0 0 15 15"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.15"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
+              <svg {...iconProps}>
                 <rect x="1.5" y="3.5" width="12" height="8" rx="1" />
                 <path d="M1.5 5l6 4 6-4" />
               </svg>
@@ -79,17 +73,7 @@ export function ContactRow({ phone, email, website }: ContactRowProps) {
             label: "Website",
             external: true,
             icon: (
-              <svg
-                width="17"
-                height="17"
-                viewBox="0 0 15 15"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.15"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
+              <svg {...iconProps}>
                 <circle cx="7.5" cy="7.5" r="5.5" />
                 <path d="M7.5 2c-1.5 2-2 3.5-2 5.5s.5 3.5 2 5.5M7.5 2c1.5 2 2 3.5 2 5.5s-.5 3.5-2 5.5" />
                 <path d="M2 7.5h11" />
@@ -111,7 +95,7 @@ export function ContactRow({ phone, email, website }: ContactRowProps) {
           target={item.external ? "_blank" : undefined}
           rel={item.external ? "noopener noreferrer" : undefined}
           aria-label={item.label}
-          className="text-muted/50 hover:text-secondary transition-colors duration-200 ease-out"
+          className="w-7 h-7 flex items-center justify-center text-secondary opacity-70 translate-y-px hover:opacity-[0.95] hover:-translate-y-px active:scale-[0.96] transition-[opacity,transform] duration-[120ms] ease-out"
         >
           {item.icon}
         </a>
