@@ -3,7 +3,7 @@
 // ContactRow — minimal icon-only contact strip.
 // Renders nothing if no items are present.
 // Inline SVGs only, no icon library dependency.
-// Icons: 16px inside 28x28 container, strokeWidth 1.75, optical translateY(1px) default.
+// Icons: 20px inside 32x32 container, strokeWidth 1.75, no vertical offset.
 
 interface ContactRowProps {
   phone?: string;
@@ -21,8 +21,8 @@ type ContactItem = {
 
 // Shared icon props — normalized stroke weight and size
 const iconProps = {
-  width: 16,
-  height: 16,
+  width: 20,
+  height: 20,
   viewBox: "0 0 15 15",
   fill: "none" as const,
   stroke: "currentColor",
@@ -87,7 +87,7 @@ export function ContactRow({ phone, email, website }: ContactRowProps) {
   if (items.length === 0) return null;
 
   return (
-    <div className="flex items-center justify-center gap-8">
+    <div className="flex items-center justify-center gap-9">
       {items.map((item) => (
         <a
           key={item.key}
@@ -95,7 +95,7 @@ export function ContactRow({ phone, email, website }: ContactRowProps) {
           target={item.external ? "_blank" : undefined}
           rel={item.external ? "noopener noreferrer" : undefined}
           aria-label={item.label}
-          className="w-7 h-7 flex items-center justify-center text-secondary opacity-70 hover:opacity-[0.95] hover:-translate-y-px active:scale-[0.96] transition-[opacity,transform] duration-[120ms] ease-out"
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-secondary opacity-[0.85] hover:opacity-100 hover:scale-[1.03] hover:bg-white/[0.05] active:scale-[0.96] transition-[opacity,transform,background-color] duration-[120ms] ease-out"
         >
           {item.icon}
         </a>
