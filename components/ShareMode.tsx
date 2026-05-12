@@ -73,7 +73,7 @@ export function ShareMode({ url, mode, handle, ctx, onClose }: ShareModeProps) {
       <PrymaLogo size={28} />
 
       {/* Active context label */}
-      <p className="font-light text-[10px] text-muted tracking-widest uppercase -mt-1">
+      <p className="font-light text-[13px] text-muted/85 tracking-widest uppercase -mt-1">
         {contextLabel}
       </p>
 
@@ -82,7 +82,7 @@ export function ShareMode({ url, mode, handle, ctx, onClose }: ShareModeProps) {
         <div className="bg-[#111111] rounded-2xl p-6">
           <ProfileQR url={url} size={240} />
         </div>
-        <p className="font-light text-xs text-muted tracking-wide uppercase">
+        <p className="font-light text-[13px] text-muted/75 tracking-wide uppercase">
           Scan to view
         </p>
       </div>
@@ -90,7 +90,7 @@ export function ShareMode({ url, mode, handle, ctx, onClose }: ShareModeProps) {
       {/* Copy link */}
       <button
         onClick={handleCopy}
-        className="w-[280px] border border-primary/20 text-secondary font-medium text-sm tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-200 ease-out hover:border-primary/40 hover:text-primary"
+        className="w-[280px] border border-primary/20 text-secondary font-medium text-[15px] tracking-wide uppercase py-3 px-6 rounded-sm text-center transition-all duration-200 ease-out hover:border-primary/40 hover:text-primary"
       >
         {copied ? "Link copied" : "Copy link"}
       </button>
@@ -99,7 +99,7 @@ export function ShareMode({ url, mode, handle, ctx, onClose }: ShareModeProps) {
       <SaveContactButton handle={handle} fields={ctx} profileUrl={url} />
 
       {/* Footer */}
-      <p className="font-light text-[10px] tracking-wide text-muted/60 uppercase mt-1">
+      <p className="font-light text-[13px] tracking-wide text-muted/70 uppercase mt-1">
         Shared intentionally via Pryma
       </p>
 

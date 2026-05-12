@@ -209,15 +209,15 @@ export function ProfileCard({
           className="flex flex-col items-center gap-1 text-center mt-[18px] animate-fade-up"
           style={{ animationDelay: "120ms" }}
         >
-          <h1 className="font-medium text-[25px] tracking-[-0.01em] text-primary">
+          <h1 className="font-medium text-[31px] tracking-[-0.01em] text-primary">
             {ctx.name}
           </h1>
-          <p className="font-light text-sm text-secondary">
+          <p className="font-light text-[18px] text-secondary/95">
             {ctx.role}
             {ctx.organization && (
               <>
                 {" "}
-                <span className="text-muted">·</span> {ctx.organization}
+                <span className="text-muted/90">·</span> {ctx.organization}
               </>
             )}
           </p>
@@ -229,12 +229,12 @@ export function ProfileCard({
             className="flex flex-col gap-3 text-center mt-6 max-w-[360px] mx-auto animate-fade-up"
             style={{ animationDelay: "180ms" }}
           >
-            <p className="font-light text-sm leading-[1.65] text-secondary line-clamp-2">
+            <p className="font-light text-[19px] leading-[1.80] text-secondary/95 line-clamp-2">
               {bioLines.join(" ")}
             </p>
             {/* Microcopy — extra delay so it arrives after the main bio */}
             <p
-              className="font-light text-[10px] tracking-wide text-muted/60 uppercase mt-2 animate-fade-up"
+              className="font-light text-[13px] tracking-wide text-muted/75 uppercase mt-2 animate-fade-up"
               style={{ animationDelay: "320ms" }}
             >
               Shared intentionally via Pryma
@@ -252,13 +252,13 @@ export function ProfileCard({
               href={normalizedWebsite}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-light text-sm text-secondary hover:text-primary transition-colors duration-200 ease-out"
+              className="font-light text-[18px] text-secondary/90 hover:text-primary transition-colors duration-200 ease-out"
             >
               {normalizedWebsite.replace(/^https?:\/\//, "")}
             </a>
           )}
           {ctx.location && (
-            <span className="flex items-center gap-1.5 font-light text-sm text-muted">
+            <span className="flex items-center gap-1.5 font-light text-[18px] text-muted/85">
               <svg
                 width="12"
                 height="12"
@@ -299,7 +299,7 @@ export function ProfileCard({
                 >
                   <ProfileQR url={shareUrl} size={118} />
                 </div>
-                <p className="font-light text-xs text-muted/40 tracking-[0.04em] uppercase">
+                <p className="font-light text-[13px] text-muted/70 tracking-[0.04em] uppercase">
                   Scan to open Pryma
                 </p>
               </div>
